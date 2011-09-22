@@ -79,36 +79,6 @@ class Game
             pathfinder.move()
       s.visited = true
 
-  # Return an array of adjacent positions.
-  #    0
-  #   1X2
-  #    3
-  adjacent: (x, y) ->
-    [
-      @board[y-1][x]  # 0
-      @board[y][x-1]  # 1
-      @board[y][x+1]  # 2
-      @board[y+1][x]  # 3
-    ]
-
-
-  # Return an array of neighbors.
-  # Neighbors are not necessarilly adjacent:
-  #   012
-  #   3X4
-  #   567
-  neighbors: (x, y) ->
-    [
-      @board[y-1][x-1]  # 0
-      @board[y-1][x]    # 1
-      @board[y-1][x+1]  # 2
-      @board[y][x-1]    # 3
-      @board[y][x+1]    # 4
-      @board[y-1][x-1]  # 5
-      @board[y-1][x]    # 6
-      @board[y-1][x+1]  # 7
-    ]
-
   fillCycle: (path) ->
 
 

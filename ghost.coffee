@@ -2,13 +2,41 @@
 # In MVC, these classes are models.
 
 
-class Player
+DIRS = ['E', 'S', 'W', 'N']
 
+
+class Player
   constructor: (@name, @id, @score) ->
 
 
-class Game
+class Pathfinder
+  constructor: (@x, @y, @direction) ->
 
+  turnLeft: (=>
+      dir = DIRS.indexOf @direction
+      =>
+        dir = (dir + 1) % 4
+        @direction = DIRS[dir]
+        @
+    )()
+
+  move: ->
+    switch @direction
+      when 'E' then @x++
+      when 'S' then @y++
+      when 'W' then @x--
+      when 'N' then @y--
+    @
+
+  front: ->
+    switch @direction
+      when 'E' then x: @x+1, y: @y
+      when 'S' then x: @x,   y: @y+1
+      when 'W' then x: @x-1, y: @y
+      when 'N' then x: @x,   y: @y-1
+
+
+class Game
   constructor: (@height, @width) ->
     @board = ((undefined for numa in [1..width]) for num in [1..height])
 
@@ -21,26 +49,64 @@ class Game
     else
       false
 
+  # Return inner paths adjacent to the last played stone.
+  # So if X's are the last player's pieces,
+  #    XXXX
+  #   X012X
+  #    XX3X
+  #      X
+  #   we'd return [[x0, y0], [x1, y1], [x2, y2], [x3, y3]].
+  # Note: The path may contain positions where other players have played.
   checkBoard: (lastX, lastY) =>
-    neighbors = @neighbors lastX, lastY
-    paths = []
-    # TODO Find paths, fill and store new cycles.
+    # We look for 'inner paths' by placing our left hand on the wall and
+    # walking around. The wall is the last player's stones.
+    starts = [
+      x: lastX,     y: lastY - 1
+      x: lastX - 1, y: lastY
+      x: lastX + 1, y: lastY
+      x: lastX,     y: lastY + 1
+    ] # list of start positions for possible paths
+    lastPlayer = @board[lastY][lastX]
+    for s, i in starts
+      if @board[s.y][s.x] != lastPlayer
+        pathfinder = new Pathfinder(s.x, s.y, DIRS[i])
+        front = pahfinder.front()
+        while front != p
+          console.log 'hey'
+          if @board[front.y][front.x] == lastPlayer
+            pathfinder.turnLeft()
+          else
+            pathfinder.move()
+      s.visited = true
+
+  # Return an array of adjacent positions.
+  #    0
+  #   1X2
+  #    3
+  adjacent: (x, y) ->
+    [
+      @board[y-1][x]  # 0
+      @board[y][x-1]  # 1
+      @board[y][x+1]  # 2
+      @board[y+1][x]  # 3
+    ]
+
 
   # Return an array of neighbors.
   # Neighbors are not necessarilly adjacent:
-  #      012
-  #      3X4
-  #      567
+  #   012
+  #   3X4
+  #   567
   neighbors: (x, y) ->
     [
-      @board[y-1][x-1]  #0
-      @board[y-1][x]    #1
-      @board[y-1][x+1]  #2
-      @board[y][x-1]    #3
-      @board[y][x+1]    #4
-      @board[y-1][x-1]  #5
-      @board[y-1][x]    #6
-      @board[y-1][x+1]  #7
+      @board[y-1][x-1]  # 0
+      @board[y-1][x]    # 1
+      @board[y-1][x+1]  # 2
+      @board[y][x-1]    # 3
+      @board[y][x+1]    # 4
+      @board[y-1][x-1]  # 5
+      @board[y-1][x]    # 6
+      @board[y-1][x+1]  # 7
     ]
 
   fillCycle: (path) ->
@@ -58,4 +124,4 @@ g = new Game(10, 10)
 peter = new Player('Peter', 1)
 bill = new Player('Bill', 2) 
 g.placeStone peter, 1, 1
-printBoard g 
+# printBoard g 

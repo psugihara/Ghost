@@ -1,3 +1,7 @@
+# This file contains game logic which may be used on the client OR server.
+# In MVC, these classes are models.
+
+
 class Player
 
   constructor: (@name, @id, @score) ->
@@ -6,40 +10,45 @@ class Player
 class Game
 
   constructor: (@height, @width) ->
-    @board = ((null for numa in [1..width]) for num in [1..height])
-    @players = []
+    @board = ((undefined for numa in [1..width]) for num in [1..height])
 
-  # addPlayer: (name, id) ->
-  #   players.push new Player(name, id)
-  
-  placeStone: (player, x, y) ->
+  placeStone: (player, x, y) =>
     if x < @width and y < @height and @board[x][y]?
       # That spot is on the board and it's empty.
       @board[y][x] = player.id
-
-      # Check the row for spots we should change.
-      row = @board[y]
-      rightEndpoint = leftEndpoint = y
-      # Check right
-      for id, i in row[x..]
-        if id == player.id
-          rightEndpoint = i
-          break
-        break unless id? # We're at the end of a row
-      # Check left
-      for id, i in row[..x].reverse()
-        if id == player.id
-          leftEndpoint = i
-          break
-        break unless id?
-
-      # # Check the column for spots we should change.
-      # col = (
-      
-
-      return true
+      @checkBoard x, y
+      true
     else
-      return false
+      false
+
+  checkBoard: (lastX, lastY) =>
+    neighbors = @neighbors lastX, lastY
+    paths = []
+    # TODO Find paths, fill and store new cycles.
+
+  # Return an array of neighbors.
+  # Neighbors are not necessarilly adjacent:
+  #      012
+  #      3X4
+  #      567
+  neighbors: (x, y) ->
+    [
+      @board[y-1][x-1]  #0
+      @board[y-1][x]    #1
+      @board[y-1][x+1]  #2
+      @board[y][x-1]    #3
+      @board[y][x+1]    #4
+      @board[y-1][x-1]  #5
+      @board[y-1][x]    #6
+      @board[y-1][x+1]  #7
+    ]
+
+  fillCycle: (path) ->
+
+
+
+# DEBUGGING
+# #########
 
 printBoard = (g) ->
   for row in g.board
@@ -48,6 +57,5 @@ printBoard = (g) ->
 g = new Game(10, 10)
 peter = new Player('Peter', 1)
 bill = new Player('Bill', 2) 
-# g.addPlayer('Bill', 2)
-g.placeStone(peter, 1, 1)
-printBoard(g)
+g.placeStone peter, 1, 1
+printBoard g 

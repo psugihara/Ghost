@@ -1,9 +1,16 @@
-# This file contains game logic which may be used on the client OR server.
-# In MVC, these classes are models.
+###
+This file contains game logic which may be used on the client OR server.
+In MVC, these classes are models.
 
+NOTE: The coordinate system used for the board is inverted across the x-axis
+with the origin in the top right.
+###
 
-DIRS = ['E', 'S', 'W', 'N']
+_ = require('underscore')
+
+DIRS = ['W', 'N', 'E', 'S']
 EMPTY = -1 # Never use -1 as a player id!
+
 
 class Player
   constructor: (@name, @id, @score) ->
@@ -16,6 +23,15 @@ class Pathfinder
         =>
           dir = (dir + 1) % 4
           @direction = DIRS[dir]
+          @
+      )()
+    @turnLeft = (=>
+        dir = DIRS.indexOf @direction
+        # The slice returns a (shallow) copy of the array.
+        revDirs = DIRS.slice().reverse()
+        =>
+          dir = (dir + 1) % 4
+          @direction = revDirs[dir]
           @
       )()
 
@@ -41,13 +57,6 @@ class Pathfinder
       when 'W' then x: @x,   y: @y-1
       when 'N' then x: @x+1, y: @y
 
-  frontRight: ->
-    switch @direction
-      when 'E' then x: @x+1, y: @y+1
-      when 'S' then x: @x-1, y: @y+1
-      when 'W' then x: @x-1, y: @y-1
-      when 'N' then x: @x+1, y: @y-1
-
   position: ->
     {x: @x, y: @y}
 
@@ -59,8 +68,8 @@ class Game
   placeStone: (player, x, y) =>
     if x < @width and y < @height and @board[x][y] == EMPTY
       # That spot is on the board and it's empty.
-      @board[y][x] = player.id
-      @checkBoard x, y
+      @board[x][y] = player.id
+      @fill @innerPaths(x, y)
       true
     else
       false
@@ -73,44 +82,56 @@ class Game
   #      X
   #   we'd return [[x0, y0], [x1, y1], [x2, y2], [x3, y3]].
   # Note: The path may contain positions where other players have played.
-  checkBoard: (lastX, lastY) =>
+  innerPaths: (lastX, lastY) =>
     paths = []
-    # We look for 'inner paths' by placing our left hand on the wall and
+    # We look for 'inner paths' by placing our right hand on the wall and
     # walking around. The wall is the last player's stones.
     starts = [
-      x: lastX,     y: lastY - 1
-      x: lastX - 1, y: lastY
-      x: lastX + 1, y: lastY
-      x: lastX,     y: lastY + 1
+      x: lastX,     y: lastY + 1, d: 'W'
+      x: lastX - 1, y: lastY,     d: 'N'
+      x: lastX,     y: lastY - 1, d: 'E'
+      x: lastX + 1, y: lastY,     d: 'S'
     ] # list of start positions for possible paths
-    lastPlayer = @board[lastY][lastX]
-    console.log 'hi'
+    lastPlayer = @board[lastX][lastY]
+
     for s, i in starts
-      if @board[s.y][s.x] != lastPlayer# and @board[s.y][s.x]?
+      # Make sure this is a valid start for an inner path.
+      if @board[s.x][s.y] != lastPlayer and @board[s.x][s.y]? and not s.visited
         # Make a pathfinder and let it explore!
-        pathfinder = new Pathfinder(s.x, s.y, DIRS[i])
-        front = @board[pathfinder.front().y][pathfinder.front().x]
-        frontRight = @board[pathfinder.frontRight().y][pathfinder.frontRight().x]
-        right = @board[pathfinder.right().y][pathfinder.right().x]
-        while pathfinder.position() != s
-          console.log 'pos:'
-          console.log pathfinder.position()
-          console.log pathfinder.position()
-          console.log 'start:'
-          console.log s
-          if front == lastPlayer or not front? or frontRight != lastPlayer
-            console.log 'hey'
-            pathfinder.turnRight()
-          else
-            console.log 'hi'
+        pathfinder = new Pathfinder(s.x, s.y, s.d)
+        path = []
+
+        front = pathfinder.front()
+        right = pathfinder.right()
+        
+        while not _.isEqual(_.last(path), _.first(path)) or path.length < 4
+          path.push pathfinder.position()
+
+          if @board[right.x][right.y] != lastPlayer
+            # console.log 'turn right'
+            pathfinder.turnRight().move()
+
+          else if not @board[front.x]? or not @board[front.x][front.y]?
+            # We hit the edge, this can't be an inner path.
+            break
+
+          else if @board[front.x][front.y] == lastPlayer
+            # console.log 'turn left'
+            pathfinder.turnLeft().move()
+
+          else if @board[front.x][front.y] != lastPlayer
+            # console.log 'move'
             pathfinder.move()
 
-          front = @board[pathfinder.front().y][pathfinder.front().x]
-          frontRight = @board[pathfinder.frontRight().y][pathfinder.frontRight().x]
-          right = @board[pathfinder.right().y][pathfinder.right().x]
-      s.visited = true
+          # Check to the front and right.
+          front = pathfinder.front()
+          right = pathfinder.right()
 
-  fillCycle: (path) ->
+        paths.push path
+        s.visited = true
+    paths
+
+  fill: (path) ->
 
 
 

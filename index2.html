@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>nowjs test</title>
+<title>GOST</title>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script src="/nowjs/now.js"></script>
 
@@ -9,12 +9,20 @@
 	body {
 		background: #f5f5f5;
 	}
-	
+	#messages{
+	  width:200px;
+	  float:left;
+	}
 	#container {
 		width: 900px;
-		margin: 20px auto;
+		float:right;
+		margin-right:50px;
 	}
-	
+	#list{
+	  float:left;
+	  width:200px;
+	  height:auto;
+	}
 	canvas#board {
 		background: #fff;
 		cursor: crosshair;
@@ -38,10 +46,25 @@ $(document).ready(function(){
     $("#text-input").val("");
   });
   
+  now.updateList = function(){
+    setTimeout(function(){
+      var list = "LIST:<br>";
+      console.log(now.clients);
+      console.log(now.firstName);
+      $.each(now.clients, function(index, value){
+        list += value+"<br>";
+      });
+      $("#list").html(list);
+    }, 500);
+  }
 
-  now.name = prompt("What's your name?", "");
 
 });
+
+now.ready(function(){
+  return now.setName(prompt("name?"));
+});
+
 $(window).load(function() {
   var ctx, draw, draw_point, draw_queue, eval_draw_queue, first_point, setup_canvas;
   ctx = null;
@@ -100,10 +123,9 @@ $(window).load(function() {
 </head>
 
 <body>
+<div id="messages"></div><input type="text" id="text-input"><input type="button" value="Send" id="send-button"><br>
+<div id="list"></div>
 
-<div id="messages"></div>
-<input type="text" id="text-input">
-<input type="button" value="Send" id="send-button">
 <div id="container">
 	<canvas id="board" width="900" height="600"></canvas>
 	<ul id="players">

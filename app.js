@@ -13,13 +13,20 @@ var everyone = nowjs.initialize(server);
 everyone.now.distributeMessage = function(message){
   everyone.now.receiveMessage(this.now.name, message);
 };
+everyone.now.clients = ["first"];
 
+everyone.now.setName = function(name){
+  console.log(name);
+  var myObj = name;
+  everyone.now.firstName = name;
+  everyone.now.clients.push(myObj);
+  console.log(everyone.now.clients);
+  everyone.now.updateList();
+  console.log("Joined: " + name);
+}
 
 nowjs.on("connect", function() {
-    //this.now.myObj = {name:this.now.name, x:0, y:0};
-    //everyone.now.clients.push(this.now.myObj);
-    //everyone.now.updateList();
-    console.log("Joined: " + this.now.name);
+    
 });
 nowjs.on("disconnect", function() {
         /*var pos = ArrayIndexOf(clients, function(obj){
@@ -39,7 +46,6 @@ everyone.now.distributeMessage = function(message) {
   return everyone.now.receiveMessage(this.now.name, message);
 };
 
-//everyone.now.clients = [];
 
 function ArrayIndexOf(a, fnc) {
     if (!fnc || typeof (fnc) != 'function') {

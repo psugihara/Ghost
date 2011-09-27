@@ -3,6 +3,7 @@
 <head>
 <title>GOST</title>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://raw.github.com/DmitryBaranovskiy/raphael/master/raphael-min.js"></script>
 <script src="/nowjs/now.js"></script>
 
 <style type="text/css" media="screen">
@@ -50,19 +51,27 @@ $(document).ready(function(){
     setTimeout(function(){
       var list = "LIST:<br>";
       console.log(now.clients);
-      console.log(now.firstName);
+      console.log(now.name);
+      for (var i in now.clients) {
+        list += now.clients[i]+"<br>";
+      }
+      /*
       $.each(now.clients, function(index, value){
         list += value+"<br>";
       });
+      */
       $("#list").html(list);
-    }, 500);
+    }, 1500);
   }
 
 
 });
 
 now.ready(function(){
-  return now.setName(prompt("name?"));
+  now.setName(prompt("name?"));
+  
+  
+  
 });
 
 $(window).load(function() {

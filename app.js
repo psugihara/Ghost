@@ -13,12 +13,13 @@ var everyone = nowjs.initialize(server);
 everyone.now.distributeMessage = function(message){
   everyone.now.receiveMessage(this.now.name, message);
 };
-everyone.now.clients = ["first"];
+everyone.now.clients = [];
 
 everyone.now.setName = function(name){
   console.log(name);
   var myObj = name;
-  everyone.now.firstName = name;
+  this.now.name = name;
+  console.log(this.now.name);
   everyone.now.clients.push(myObj);
   console.log(everyone.now.clients);
   everyone.now.updateList();
@@ -29,13 +30,17 @@ nowjs.on("connect", function() {
     
 });
 nowjs.on("disconnect", function() {
+    var pos = everyone.now.clients.indexOf(this.now.name)
         /*var pos = ArrayIndexOf(clients, function(obj){
             return obj.id == myObj.id;
-        })
+        })*/
+        console.log()
+        console.log(pos);
         if(pos >= 0){
-            clients.splice(pos,1);
-        }*/
+            everyone.now.clients.splice(pos,1);
+        }
  console.log("Left: " + this.now.name);
+ everyone.now.updateList();
 });
 
 everyone.now.distribute_draw = function(x,y){

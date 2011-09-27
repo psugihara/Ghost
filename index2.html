@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>nowjs test</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="/nowjs/now.js"></script>
+
+<style type="text/css" media="screen">
+	body {
+		background: #f5f5f5;
+	}
+	
+	#container {
+		width: 900px;
+		margin: 20px auto;
+	}
+	
+	canvas#board {
+		background: #fff;
+		cursor: crosshair;
+		border: 1px solid #ccc;
+		border-radius: 10px;
+		box-shadow: inset 0 0 5px #aaa;
+		
+		width: 900px;
+		height: 600px;
+	}
+</style>
+
+<script>
+$(document).ready(function(){
+  now.receiveMessage = function(name, message){
+    $("#messages").append("<br>" + name + ": " + message);
+  }
+  
+  $("#send-button").click(function(){
+    now.distributeMessage($("#text-input").val());
+    $("#text-input").val("");
+  });
+  
+
+  now.name = prompt("What's your name?", "");
+
+});
+$(window).load(function() {
+  var ctx, draw, draw_point, draw_queue, eval_draw_queue, first_point, setup_canvas;
+  ctx = null;
+  first_point = true;
+  draw = false;
+  draw_queue = [];
+  setup_canvas = function() {
+    var canvas;
+    draw = false;
+    canvas = $('canvas#board')[0];
+    ctx = canvas.getContext('2d');
+    ctx.translate(0.5, 0.5);
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    $('canvas#board').mousedown(function() {
+      return draw = true;
+    });
+    $('canvas#board').mouseup(function() {
+      draw = false;
+      return first_point = true;
+    });
+    return $('canvas#board').mousemove(function(e) {
+      if (draw) {
+        return draw_queue.push([e.offsetX, e.offsetY]);
+      }
+    });
+  };
+  draw_point = function(x, y) {
+    if (first_point) {
+      ctx.moveTo(x - 1, y - 1);
+      first_point = false;
+    }
+    ctx.lineTo(x, y);
+    return ctx.stroke();
+  };
+  eval_draw_queue = function() {
+    var next;
+    if (draw_queue.length === 0) {
+      return;
+    }
+    next = draw_queue.shift();
+    return now.distribute_draw(next[0], next[1]);
+  };
+  now.receive_draw = function(x, y) {
+    return draw_point(x, y);
+  };
+  
+  setup_canvas();
+  setInterval(eval_draw_queue, 10);
+  //console.log(now);
+  //return now.distribute_name(prompt("butt?", ""));
+});
+
+</script>
+</head>
+
+<body>
+
+<div id="messages"></div>
+<input type="text" id="text-input">
+<input type="button" value="Send" id="send-button">
+<div id="container">
+	<canvas id="board" width="900" height="600"></canvas>
+	<ul id="players">
+	
+	</ul>
+</div>
+</body>
+</html>

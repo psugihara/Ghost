@@ -18,6 +18,7 @@ class Player
 
 class Pathfinder
   constructor: (@x, @y, @direction) ->
+    @path = []
     @turnRight = (=>
         dir = DIRS.indexOf @direction
         =>
@@ -60,6 +61,19 @@ class Pathfinder
   position: ->
     {x: @x, y: @y}
 
+  # Furthest Pathfinder has explored in each direction:
+  farEast: ->
+    _.max(pos[0] for pos in @path)
+
+  farWest: ->
+    _.min(pos[0] for pos in @path)
+
+  farNorth: ->
+    _.min(pos[1] for pos in @path)
+
+  farSouth: ->
+    _.max(pos[1] for pos in @path)
+
 
 class Game
   constructor: (@height, @width) ->
@@ -97,19 +111,18 @@ class Game
     for s, i in starts
       # Make sure this is a valid start for an inner path.
       if @board[s.x][s.y] != lastPlayer and @board[s.x][s.y]? and not s.visited
-        # Make a pathfinder and let it explore!
-        pathfinder = new Pathfinder(s.x, s.y, s.d)
-        path = []
+        # Make a pf and let it explore!
+        pf = new Pathfinder(s.x, s.y, s.d)
 
-        front = pathfinder.front()
-        right = pathfinder.right()
-        
-        while not _.isEqual(_.last(path), _.first(path)) or path.length < 4
-          path.push pathfinder.position()
+        front = pf.front()
+        right = pf.right()
+
+        while not _.isEqual(_.last(pf.path), _.first(pf.path)) or pf.path.length < 4
+          pf.paths.push pf.position()
 
           if @board[right.x][right.y] != lastPlayer
             # console.log 'turn right'
-            pathfinder.turnRight().move()
+            pf.turnRight().move()
 
           else if not @board[front.x]? or not @board[front.x][front.y]?
             # We hit the edge, this can't be an inner path.
@@ -117,17 +130,17 @@ class Game
 
           else if @board[front.x][front.y] == lastPlayer
             # console.log 'turn left'
-            pathfinder.turnLeft().move()
+            pf.turnLeft().move()
 
           else if @board[front.x][front.y] != lastPlayer
             # console.log 'move'
-            pathfinder.move()
+            pf.move()
 
           # Check to the front and right.
-          front = pathfinder.front()
-          right = pathfinder.right()
+          front = pf.front()
+          right = pf.right()
 
-        paths.push path
+        paths.push pf.path
         s.visited = true
     paths
 

@@ -9,12 +9,15 @@
 <style type="text/css" media="screen">
 	body {
 		background: #f5f5f5;
+		cursor: crosshair;
+		
 	}
 	#messages{
 	  width:200px;
 	  float:left;
 	}
 	#container {
+	  border:1px solid black;
 		width: 900px;
 		float:right;
 		margin-right:50px;
@@ -68,13 +71,57 @@ $(document).ready(function(){
 });
 
 now.ready(function(){
+  var image = [];
+  var lastPoint = "";
+  var draw = false;
   now.setName(prompt("name?"));
   
+  var paper = Raphael(200,50,800,600);
+  var r = paper.rect(0,0,800,600).attr("fill","white").attr("stroke", "blue");
+  var path = paper.path();
+  
+
+
+  $(window).mousedown(function(){
+
+      draw = true;
+    console.log(draw);
+  });
+  $(window).mouseup(function(){
+
+      draw = false;
+      lastPoint = "";
+  });
+
+  $(r.node).mousemove(function(e){
+    if(draw){
+      image.push({x:e.offsetX, y:e.offsetY});
+      //console.log(image);
+    }
+    
+  })
+  
+  function drawing(){
+      if (image.length === 0) {
+        return;
+      }
+      var p = image.shift();
+      if(lastPoint == ""){
+        lastPoint = p;
+        path = paper.path("M"+(p.x-1)+" "+(p.y-1)+"L"+(p.x)+" "+(p.y));
+      }
+      else{
+        path = paper.path("M"+(lastPoint.x)+" "+(lastPoint.y)+"L"+(p.x)+" "+(p.y));
+        lastPoint = p;
+      }
+  }
+  var go = setInterval(drawing, 10);
   
   
 });
 
 $(window).load(function() {
+  /*8
   var ctx, draw, draw_point, draw_queue, eval_draw_queue, first_point, setup_canvas;
   ctx = null;
   first_point = true;
@@ -124,6 +171,7 @@ $(window).load(function() {
   
   setup_canvas();
   setInterval(eval_draw_queue, 10);
+  */
   //console.log(now);
   //return now.distribute_name(prompt("butt?", ""));
 });
@@ -134,12 +182,12 @@ $(window).load(function() {
 <body>
 <div id="messages"></div><input type="text" id="text-input"><input type="button" value="Send" id="send-button"><br>
 <div id="list"></div>
-
+<!--
 <div id="container">
 	<canvas id="board" width="900" height="600"></canvas>
 	<ul id="players">
 	
 	</ul>
-</div>
+</div>-->
 </body>
 </html>

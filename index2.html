@@ -40,6 +40,7 @@
 </style>
 
 <script>
+now.clients = [];
 $(document).ready(function(){
   now.receiveMessage = function(name, message){
     $("#messages").append("<br>" + name + ": " + message);
@@ -56,7 +57,7 @@ $(document).ready(function(){
       console.log(now.clients);
       console.log(now.name);
       for (var i in now.clients) {
-        list += now.clients[i]+"<br>";
+        list += now.clients[i].name+"<br>";
       }
       /*
       $.each(now.clients, function(index, value){

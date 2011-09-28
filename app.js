@@ -13,11 +13,13 @@ var everyone = nowjs.initialize(server);
 everyone.now.distributeMessage = function(message){
   everyone.now.receiveMessage(this.now.name, message);
 };
+
 everyone.now.clients = [];
 
 everyone.now.setName = function(name){
   console.log(name);
   var myObj = name;
+  var myObj = {name:name,x:0,y:0};
   this.now.name = name;
   console.log(this.now.name);
   everyone.now.clients.push(myObj);
@@ -30,10 +32,11 @@ nowjs.on("connect", function() {
     
 });
 nowjs.on("disconnect", function() {
-    var pos = everyone.now.clients.indexOf(this.now.name)
-        /*var pos = ArrayIndexOf(clients, function(obj){
-            return obj.id == myObj.id;
-        })*/
+  console.log(this.now.name);
+  var left = this.now.name;
+        var pos = ArrayIndexOf(everyone.now.clients, function(obj){
+            return obj.name == left;
+        })
         console.log()
         console.log(pos);
         if(pos >= 0){

@@ -75,7 +75,22 @@ now.ready(function(){
   var image = [];
   var lastPoint = "";
   var draw = false;
-  now.setName(prompt("name?"));
+  nameTaken = true;
+
+
+
+//checkName("name?");
+
+now.askName = function(string){
+  now.setName(prompt(string));
+}
+
+now.askName("Name?");
+
+  //nameTaken = now.ArrayIndexOf(now.clients, prompt("name?")) == -1 ? false : true;
+
+  
+  
   
   var paper = Raphael(200,50,800,600);
   var r = paper.rect(0,0,800,600).attr("fill","white").attr("stroke", "blue");

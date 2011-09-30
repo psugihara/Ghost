@@ -52,6 +52,9 @@ $(document).ready(function(){
     now.distributeMessage($("#text-input").val());
     $("#text-input").val("");
   });
+  $("#clear-button").click(function(){
+    now.clearBoard();
+  });
   
   now.updateList = function(){
     setTimeout(function(){
@@ -64,8 +67,7 @@ $(document).ready(function(){
         if ($.inArray(nm, now.runningTimers)){
           now.runningTimers.push(nm);
           console.log("new timer");
-          setInterval(function(){
-            drawing(nm);}, 10);  
+          //setInterval(function(){drawing(nm);}, 100);  
         } 
       }
       /*
@@ -84,6 +86,7 @@ var paper;
 var lastPoint = "";
 var image = [];
 var draw = false;
+var r;
 
 now.ready(function(){
   nameTaken = true;
@@ -92,36 +95,96 @@ now.askName = function(string){
   now.setName(prompt(string));
 }
   now.askName("Name?");
-  //nameTaken = now.ArrayIndexOf(now.clients, prompt("name?")) == -1 ? false : true;
-  paper = Raphael(200,50,320,320);
-  var r = paper.rect(0,0,320,320).attr("fill","white").attr("stroke", "blue");
-  var path = paper.path();
-  $(window).mousedown(function(){
-      draw = true;
-    console.log(draw);
-  });
-  $(window).mouseup(function(){
-      draw = false;
-      now.addToImage(now.name, {x:0,y:0});
-    });
-  $(r.node).mousemove(function(e){
-    if(draw){
-      now.addToImage(now.name,{x:e.offsetX, y:e.offsetY});
-      //image.push({x:e.offsetX, y:e.offsetY});
-      //console.log(image);
-    }
-  }) 
+  
+  start();
+ 
   
 
   
 });
 
 
+function start(){
+  
+  //nameTaken = now.ArrayIndexOf(now.clients, prompt("name?")) == -1 ? false : true;
+   paper = Raphael(200,50,320,320);
+   r = paper.rect(0,0,320,320).attr("fill","white").attr("stroke", "blue");
+   var path = paper.path();
+   $(window).mousedown(function(){
+       draw = true;
+     //console.log(draw);
+   });
+   $(window).mouseup(function(){
+       draw = false;
+       //now.addToImage({name:now.name,x:0,y:0});
+     });
+
+   var lp = "";  
+   $(r.node).mousemove(function(e){
+     if(draw){
+       var x = Math.floor(e.offsetX/20);
+       var y = Math.floor(e.offsetY/20);
+       var cp = x+","+y;
+       if (lp != cp){
+         //console.log ("lp="+lp+"//cp="+cp);
+         lp = cp;
+         now.addToImage({name:now.name,x:x, y:y});
+       }
+       //image.push({x:e.offsetX, y:e.offsetY});
+       //console.log(image);
+     }
+   })
+  
+}
+
+now.addToBoard = function(obj){
+  var name = obj.name,
+  x = obj.x*20,
+  y = obj.y*20;
+  paper.rect(x,y,20,20);
+}
+
+oldBoard = [];
+for(var i = 0; i < 16; i ++){
+  oldBoard[i] = [];
+}
+
+now.drawBoard = function(board){
+
+  //console.log("drawboard");
+  if(board == "clear"){
+    oldBoard = [];
+    for(var i = 0; i < 16; i ++){
+      oldBoard[i] = [];
+    }
+    paper.clear();
+    start();
+  }
+  else{
+    for(x in board){
+      if(jQuery.isArray(board[x])){
+        for(y in board[x]){
+          //console.log(board[x][y])
+          if(board[x][y] != oldBoard[x][y]){
+            paper.rect((x*20),(y*20),20,20).attr("fill","red");
+          }
+        }
+      }
+    }
+  }
+  oldBoard = board;
+}
+now.DONTaddToBoard = function(obj){
+  var name = obj.name,
+  x = obj.x*20,
+  y = obj.y*20;
+  paper.rect(x,y,20,20).attr("stroke","red");
+}
+
  function drawing(varname){
      var me = ArrayIndexOf(now.clients, function(obj){
          return obj.name == varname;
      });
-
      if (now.clients[me].draw.length === 0) {
        return;
      }
@@ -156,6 +219,7 @@ function ArrayIndexOf(a, fnc) {
 </head>
 
 <body>
+  <input type="button" value="clear" id="clear-button"><br>
 <div id="messages"></div><input type="text" id="text-input"><input type="button" value="Send" id="send-button"><br>
 <div id="list"></div>
 <!--

@@ -9,19 +9,40 @@ var server = require('http').createServer(function(req, response){
 });
 server.listen(8080);
 var nowjs = require("now");
+//var game = require("./ghost");
 var everyone = nowjs.initialize(server);
 
 everyone.now.distributeMessage = function(message){
   everyone.now.receiveMessage(this.now.name, message);
 };
-
+/*
+var game = new Game;
+everyone.now.board = game.board;
+*/
 everyone.now.clients = [];
+var board = [];
+for(var i = 0; i < 16; i ++){
+  board[i] = [];
+}
 
 everyone.now.addToImage = function(name,cObj){
   console.log(cObj);
+  var name = cObj.name;
+  var x = cObj.x;
+  var y = cObj.y;
+  if(board[x][y] === undefined){
+    board[x][y] = blue;
+  }
+  else if (board[x][y] == name){
+    //EVALUATE IF SOMEONE OCCUPIES THAT SPACE
+    
+  }
+  
+  /*
   var pos = ArrayIndexOf(everyone.now.clients, function(obj){
       return obj.name == name;
   });
+  */
   //console.log("pos = "+pos);
   //console.log($.makeArray(everyone.now.clients[pos].draw).constructor.toString());
   console.log(everyone.now.clients[pos].draw);

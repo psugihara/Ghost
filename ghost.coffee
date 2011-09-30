@@ -127,7 +127,7 @@ class Game
         right = pf.right()
 
         while not _.isEqual(_.last(pf.path), _.first(pf.path)) or pf.path.length < 4
-          pf.paths.push pf.position()
+          paths.push pf.position()
 
           if @board[right.x][right.y] != lastPlayer
             pf.turnRight().move()

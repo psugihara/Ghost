@@ -1,4 +1,5 @@
 var fs = require('fs');
+var $ = require('jquery');
 var server = require('http').createServer(function(req, response){
   fs.readFile(__dirname+'/index2.html', function(err, data){
     response.writeHead(200, {'Content-Type':'text/html'});
@@ -16,16 +17,45 @@ everyone.now.distributeMessage = function(message){
 
 everyone.now.clients = [];
 
+everyone.now.addToImage = function(name,cObj){
+  console.log(cObj);
+  var pos = ArrayIndexOf(everyone.now.clients, function(obj){
+      return obj.name == name;
+  });
+  //console.log("pos = "+pos);
+  //console.log($.makeArray(everyone.now.clients[pos].draw).constructor.toString());
+  console.log(everyone.now.clients[pos].draw);
+  everyone.now.clients[pos].draw = $.makeArray(everyone.now.clients[pos].draw);
+  console.log(everyone.now.clients[pos].draw);
+  everyone.now.clients[pos].draw.push(cObj);
+  console.log(everyone.now.clients[pos].draw);
+  
+}
+
 everyone.now.setName = function(name){
-  console.log(name);
-  var myObj = name;
-  var myObj = {name:name,x:0,y:0};
-  this.now.name = name;
-  console.log(this.now.name);
-  everyone.now.clients.push(myObj);
   console.log(everyone.now.clients);
-  everyone.now.updateList();
-  console.log("Joined: " + name);
+  console.log(name);
+  var pos = ArrayIndexOf(everyone.now.clients, function(obj){
+      return obj.name == name;
+  });
+  console.log(pos);
+  if(pos > -1){
+    this.now.askName("name is taken");
+  }
+  else{
+    console.log(name);
+    var myObj = name;
+    //var tmpArray = new Array([0,0],[1,1]);
+    var myObj = {name:name,draw:[]};
+    this.now.name = name;
+    everyone.now.clients.push(myObj);
+    console.log(myObj.draw.constructor.toString());
+    console.log(everyone.now.clients[0].draw.constructor.toString());
+    console.log($.makeArray(everyone.now.clients[0].draw).constructor.toString());
+    console.log(everyone.now.clients);
+    everyone.now.updateList();
+    console.log("Joined: " + name);
+  }
 }
 
 nowjs.on("connect", function() {

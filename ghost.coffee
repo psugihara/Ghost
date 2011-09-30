@@ -6,7 +6,9 @@ NOTE: The coordinate system used for the board is inverted across the x-axis
 with the origin in the top right.
 ###
 
+
 _ = require('underscore')
+
 
 DIRS = ['W', 'N', 'E', 'S']
 EMPTY = -1 # Never use -1 as a player id!
@@ -74,6 +76,13 @@ class Pathfinder
   farSouth: ->
     _.max(pos[1] for pos in @path)
 
+  pointInPath: (x, y) ->
+    # Implementation of point in polygon algorithm.
+    # This won't be accurate for points on the edge.
+    pointsToLeft = _.filter(@path, (p) -> p.x < x and p.y == y)
+    pointsToRight = _.filter(@path, (p) -> p.x > x and p.y == y)
+    pointsToRight % 2 == 1 and pointsToRight % 2 == 1
+
 
 class Game
   constructor: (@height, @width) ->
@@ -121,7 +130,6 @@ class Game
           pf.paths.push pf.position()
 
           if @board[right.x][right.y] != lastPlayer
-            # console.log 'turn right'
             pf.turnRight().move()
 
           else if not @board[front.x]? or not @board[front.x][front.y]?
@@ -129,23 +137,21 @@ class Game
             break
 
           else if @board[front.x][front.y] == lastPlayer
-            # console.log 'turn left'
             pf.turnLeft().move()
 
           else if @board[front.x][front.y] != lastPlayer
-            # console.log 'move'
             pf.move()
 
           # Check to the front and right.
           front = pf.front()
           right = pf.right()
 
-        paths.push pf.path
         s.visited = true
+        if not pf.pointInPath s.x s.y
+          paths.push pf.path
     paths
 
   fill: (path) ->
-
 
 
 # DEBUGGING

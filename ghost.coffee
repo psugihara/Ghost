@@ -104,6 +104,9 @@ class Game
     else
       false
 
+  onBoard: (x, y) =>
+    x < @width and x >= 0 and y < @height and y >= 0
+  
   # Return inner paths adjacent to the last played stone.
   # So if X's are the last player's pieces,
   #    XXXX
@@ -125,7 +128,7 @@ class Game
     lastPlayer = @board[lastX][lastY]
     for s, i in starts
       # Make sure this is a valid start for an inner path.
-      if @board[s.x][s.y] != lastPlayer and @board[s.x][s.y]?
+      if @onBoard(s.x, s.y) and @board[s.x][s.y] != lastPlayer
         # Make a Pathfinder and let it explore!
         pf = new Pathfinder(s.x, s.y, s.d)
 
@@ -133,18 +136,16 @@ class Game
         right = pf.right()
         left = pf.left()
 
-        while not pf.atStart() or pf.path.length < 4
-          # if not @board[front.x]? or not @board[front.x][front.y]?
-          #   # We hit the edge, this can't be an inner path.
-          #   break
-          
+        while not pf.atStart() or pf.path.length < 2
+          if not @onBoard(right.x, right.y)
+            break # We hit the edge, this can't be an inner path.
           # http://www.micromouseinfo.com/introduction/wallfollow.html
           if @board[right.x][right.y] != lastPlayer
             pf.turnRight()
 
-          else if @board[front.x][front.y] != lastPlayer
+          else if @onBoard(front.x, front.y) and @board[front.x][front.y] != lastPlayer
 
-          else if @board[left.x][left.y] != lastPlayer
+          else if @onBoard(left.x, left.y) and @board[left.x][left.y] != lastPlayer
             pf.turnLeft()
 
           else
@@ -160,8 +161,7 @@ class Game
         if pf.atStart()
           pf.path.pop() # We only want 1 copy of the starting pos.
 
-        if not pf.pointWithinPath(lastX, lastY)
-          console.log pf.path
+        if not pf.pointWithinPath(lastX, lastY) and pf.path.length > 0
           paths.push pf.path
         pf.path = []
     paths
@@ -169,11 +169,11 @@ class Game
   fill: (path, playerID) ->
     groups = _.groupBy path, (p) -> p.x
     inside = true
-    for x, xGroup in groups
+    for x, xGroup of groups
       sorted = _.pluck xGroup.sort(), 'y'
-      nextY = sorted.pop()
+      nextY = sorted[0]
       for y in [_.min(sorted).._.max(sorted)]
-        @board[x][y] == playerID if inside
+        @board[x][y] = playerID if inside
         if y == nextY
           nextY = sorted.pop()
           inside = not inside
@@ -206,6 +206,7 @@ g.placeStone peter, 4, 2
 g.placeStone peter, 4, 1
 g.placeStone peter, 3, 1
 g.placeStone peter, 2, 1
+g.placeStone peter, 0, 1
 printBoard g 
 
 

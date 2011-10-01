@@ -14,6 +14,16 @@ DIRS = ['W', 'N', 'E', 'S']
 EMPTY = -1 # Never use -1 as a player id!
 
 
+# [1, 2, 3, 4] -> [[1, 2], [3, 4]]
+# [1] -> 
+# pair = (list) ->
+#   if list.length <= 1
+#     return [list[0], list[0]]
+#   even = (item for item in list when _i%2==0)
+#   odd = (item for item in list when _i%2==1)
+#   _.zip even, odd
+
+  
 class Player
   constructor: (@name, @id, @score) ->
 
@@ -168,15 +178,12 @@ class Game
 
   fill: (path, playerID) ->
     groups = _.groupBy path, (p) -> p.x
-    inside = true
+
     for x, xGroup of groups
       sorted = _.pluck xGroup.sort(), 'y'
-      nextY = sorted[0]
-      for y in [_.min(sorted).._.max(sorted)]
-        @board[x][y] = playerID if inside
-        if y == nextY
-          nextY = sorted.pop()
-          inside = not inside
+      for i in [0..sorted.length] by 2
+        for y in [sorted[i]..(sorted[i+1] or sorted[i])]
+          @board[x][y] = playerID 
 
 
 # DEBUGGING

@@ -14,6 +14,22 @@ DIRS = ['W', 'N', 'E', 'S']
 EMPTY = -1 # Never use -1 as a player id!
 
 
+# [1, 2, 3, 4] -> [[1, 2], [3, 4]]
+# [1] -> 
+# pair = (list) ->
+#   if list.length <= 1
+#     return [list[0], list[0]]
+#   even = (item for item in list when _i%2==0)
+#   odd = (item for item in list when _i%2==1)
+#   _.zip even, odd
+
+pointInPolygon = (poly, x, y) =>
+  # Implementation of point in polygon algorithm.
+  # This won't be accurate for points on the edge.
+  pointsToLeft = _.filter(poly, (p) -> p.x < x and p.y == y).length
+  pointsToRight = _.filter(poly, (p) -> p.x > x and p.y == y).length
+  pointsToRight % 2 == 1 and pointsToRight % 2 == 1
+  
 class Player
   constructor: (@name, @id, @score) ->
 
@@ -21,29 +37,35 @@ class Player
 class Pathfinder
   constructor: (@x, @y, @direction) ->
     @path = []
-    @turnRight = (=>
-        dir = DIRS.indexOf @direction
-        =>
-          dir = (dir + 1) % 4
-          @direction = DIRS[dir]
-          @
-      )()
     @turnLeft = (=>
-        dir = DIRS.indexOf @direction
         # The slice returns a (shallow) copy of the array.
         revDirs = DIRS.slice().reverse()
         =>
+          dir = revDirs.indexOf @direction          
           dir = (dir + 1) % 4
           @direction = revDirs[dir]
           @
       )()
 
-  move: ->
+  turnRight: =>
+    dir = DIRS.indexOf @direction          
+    dir = (dir + 1) % 4
+    @direction = DIRS[dir]
+    @
+
+  turnAround: =>
+    dir = DIRS.indexOf @direction
+    dir = (dir + 2) % 4
+    @direction = DIRS[dir]
+    @
+
+  move: =>
     switch @direction
       when 'E' then @x++
       when 'S' then @y++
       when 'W' then @x--
       when 'N' then @y--
+    @path.push @position()
     @
 
   front: ->
@@ -60,29 +82,21 @@ class Pathfinder
       when 'W' then x: @x,   y: @y-1
       when 'N' then x: @x+1, y: @y
 
-  position: ->
+  left: ->
+    switch @direction
+      when 'E' then x: @x,   y: @y-1
+      when 'S' then x: @x+1, y: @y
+      when 'W' then x: @x,   y: @y+1
+      when 'N' then x: @x-1, y: @y
+
+  position: =>
     {x: @x, y: @y}
 
-  # Furthest Pathfinder has explored in each direction:
-  farEast: ->
-    _.max(pos[0] for pos in @path)
+  atStart: =>
+    _.isEqual @path[0], @position()
 
-  farWest: ->
-    _.min(pos[0] for pos in @path)
-
-  farNorth: ->
-    _.min(pos[1] for pos in @path)
-
-  farSouth: ->
-    _.max(pos[1] for pos in @path)
-
-  pointInPath: (x, y) ->
-    # Implementation of point in polygon algorithm.
-    # This won't be accurate for points on the edge.
-    pointsToLeft = _.filter(@path, (p) -> p.x < x and p.y == y)
-    pointsToRight = _.filter(@path, (p) -> p.x > x and p.y == y)
-    pointsToRight % 2 == 1 and pointsToRight % 2 == 1
-
+  pointAtPosition: (p) =>
+    p.x == @x and p.y == @y
 
 class Game
   constructor: (@height, @width) ->
@@ -92,11 +106,16 @@ class Game
     if x < @width and y < @height and @board[x][y] == EMPTY
       # That spot is on the board and it's empty.
       @board[x][y] = player.id
-      @fill @innerPaths(x, y)
+      toFill =  @innerPaths(x, y)
+      for p in toFill
+        @fill p, player.id
       true
     else
       false
 
+  onBoard: (x, y) =>
+    x < @width and x >= 0 and y < @height and y >= 0
+  
   # Return inner paths adjacent to the last played stone.
   # So if X's are the last player's pieces,
   #    XXXX
@@ -110,59 +129,106 @@ class Game
     # We look for 'inner paths' by placing our right hand on the wall and
     # walking around. The wall is the last player's stones.
     starts = [
-      x: lastX,     y: lastY + 1, d: 'W'
-      x: lastX - 1, y: lastY,     d: 'N'
-      x: lastX,     y: lastY - 1, d: 'E'
-      x: lastX + 1, y: lastY,     d: 'S'
+      {x: lastX,     y: lastY + 1, d: 'W'}
+      {x: lastX - 1, y: lastY,     d: 'N'}
+      {x: lastX,     y: lastY - 1, d: 'E'}
+      {x: lastX + 1, y: lastY,     d: 'S'}
     ] # list of start positions for possible paths
     lastPlayer = @board[lastX][lastY]
-
     for s, i in starts
       # Make sure this is a valid start for an inner path.
-      if @board[s.x][s.y] != lastPlayer and @board[s.x][s.y]? and not s.visited
-        # Make a pf and let it explore!
+      if @onBoard(s.x, s.y) and @board[s.x][s.y] != lastPlayer
+        # Make a Pathfinder and let it explore!
         pf = new Pathfinder(s.x, s.y, s.d)
 
         front = pf.front()
         right = pf.right()
+        left = pf.left()
 
-        while not _.isEqual(_.last(pf.path), _.first(pf.path)) or pf.path.length < 4
-          paths.push pf.position()
-
+        while not pf.atStart() or pf.path.length < 2
+          if not @onBoard(right.x, right.y)
+            break # We hit the edge, this can't be an inner path.
+          # http://www.micromouseinfo.com/introduction/wallfollow.html
           if @board[right.x][right.y] != lastPlayer
-            pf.turnRight().move()
+            pf.turnRight()
 
-          else if not @board[front.x]? or not @board[front.x][front.y]?
-            # We hit the edge, this can't be an inner path.
-            break
+          else if @onBoard(front.x, front.y) and @board[front.x][front.y] != lastPlayer
 
-          else if @board[front.x][front.y] == lastPlayer
-            pf.turnLeft().move()
+          else if @onBoard(left.x, left.y) and @board[left.x][left.y] != lastPlayer
+            pf.turnLeft()
 
-          else if @board[front.x][front.y] != lastPlayer
-            pf.move()
+          else
+            pf.turnAround()
+
+          pf.move()
 
           # Check to the front and right.
           front = pf.front()
           right = pf.right()
+          left = pf.left()
 
-        s.visited = true
-        if not pf.pointInPath s.x s.y
+        if pf.atStart()
+          pf.path.pop() # We only want 1 copy of the starting pos.
+
+        if not pointInPolygon(pf.path, lastX, lastY) and pf.path.length > 0
           paths.push pf.path
+        pf.path = []
     paths
 
-  fill: (path) ->
+  fill: (path, playerID) ->
+    groups = _.groupBy path, (p) -> p.x
+    # Fill path.
+    for p in path
+      @board[p.x][p.y] = playerID
+    # Fill inside of path.
+    for x, xGroup of groups
+      for y in [_.min(xGroup).._.max(xGroup)]
+        if pointInPolygon path, x, y
+          @board[x][y] = playerID
+    # This is more efficient but doesn't work when there are solo points in a line.
+    # XXXXXX
+    # X    X
+    # X X  X
+    #  X X
+    # for x, xGroup of groups
+    #   sorted = _.pluck xGroup.sort(), 'y'
+    #   for i in [0..sorted.length] by 2
+    #     for y in [sorted[i]..(sorted[i+1] or sorted[i])]
+    #       @board[x][y] = playerID 
 
 
 # DEBUGGING
 # #########
 
 printBoard = (g) ->
-  for row in g.board
-    console.log row
+  console.log '================================'
+  s = ''
+  for colNum in [0..g.board[0].length-1]
+    s = ''
+    for row in g.board
+      s += row[colNum]
+      s += ' '
+    console.log s
+  console.log '================================'  
 
 g = new Game(10, 10)
-peter = new Player('Peter', 1)
+peter = new Player('Peter', 33)
 bill = new Player('Bill', 2) 
 g.placeStone peter, 1, 1
-# printBoard g 
+g.placeStone peter, 1, 2
+g.placeStone peter, 1, 3
+g.placeStone peter, 1, 4
+g.placeStone peter, 2, 4
+g.placeStone peter, 3, 4
+g.placeStone peter, 3, 4
+g.placeStone peter, 4, 3
+g.placeStone peter, 4, 2
+g.placeStone peter, 4, 1
+g.placeStone peter, 3, 1
+g.placeStone peter, 2, 1
+g.placeStone peter, 0, 1
+printBoard g 
+
+
+
+

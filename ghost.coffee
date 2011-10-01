@@ -23,6 +23,12 @@ EMPTY = -1 # Never use -1 as a player id!
 #   odd = (item for item in list when _i%2==1)
 #   _.zip even, odd
 
+pointInPolygon = (poly, x, y) =>
+  # Implementation of point in polygon algorithm.
+  # This won't be accurate for points on the edge.
+  pointsToLeft = _.filter(poly, (p) -> p.x < x and p.y == y).length
+  pointsToRight = _.filter(poly, (p) -> p.x > x and p.y == y).length
+  pointsToRight % 2 == 1 and pointsToRight % 2 == 1
   
 class Player
   constructor: (@name, @id, @score) ->
@@ -85,13 +91,6 @@ class Pathfinder
 
   position: =>
     {x: @x, y: @y}
-
-  pointWithinPath: (x, y) =>
-    # Implementation of point in polygon algorithm.
-    # This won't be accurate for points on the edge.
-    pointsToLeft = _.filter(@path, (p) -> p.x < x and p.y == y).length
-    pointsToRight = _.filter(@path, (p) -> p.x > x and p.y == y).length
-    pointsToRight % 2 == 1 and pointsToRight % 2 == 1
 
   atStart: =>
     _.isEqual @path[0], @position()
@@ -171,19 +170,31 @@ class Game
         if pf.atStart()
           pf.path.pop() # We only want 1 copy of the starting pos.
 
-        if not pf.pointWithinPath(lastX, lastY) and pf.path.length > 0
+        if not pointInPolygon(pf.path, lastX, lastY) and pf.path.length > 0
           paths.push pf.path
         pf.path = []
     paths
 
   fill: (path, playerID) ->
     groups = _.groupBy path, (p) -> p.x
-
+    # Fill path.
+    for p in path
+      @board[p.x][p.y] = playerID
+    # Fill inside of path.
     for x, xGroup of groups
-      sorted = _.pluck xGroup.sort(), 'y'
-      for i in [0..sorted.length] by 2
-        for y in [sorted[i]..(sorted[i+1] or sorted[i])]
-          @board[x][y] = playerID 
+      for y in [_.min(xGroup).._.max(xGroup)]
+        if pointInPolygon path, x, y
+          @board[x][y] = playerID
+    # This is more efficient but doesn't work when there are solo points in a line.
+    # XXXXXX
+    # X    X
+    # X X  X
+    #  X X
+    # for x, xGroup of groups
+    #   sorted = _.pluck xGroup.sort(), 'y'
+    #   for i in [0..sorted.length] by 2
+    #     for y in [sorted[i]..(sorted[i+1] or sorted[i])]
+    #       @board[x][y] = playerID 
 
 
 # DEBUGGING
@@ -206,8 +217,10 @@ bill = new Player('Bill', 2)
 g.placeStone peter, 1, 1
 g.placeStone peter, 1, 2
 g.placeStone peter, 1, 3
-g.placeStone peter, 2, 3
-g.placeStone peter, 3, 3
+g.placeStone peter, 1, 4
+g.placeStone peter, 2, 4
+g.placeStone peter, 3, 4
+g.placeStone peter, 3, 4
 g.placeStone peter, 4, 3
 g.placeStone peter, 4, 2
 g.placeStone peter, 4, 1

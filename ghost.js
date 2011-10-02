@@ -248,7 +248,7 @@
           right = pf.right();
           left = pf.left();
           while (!pf.atStart() || pf.path.length < 2) {
-            if (!this.onBoard(right.x, right.y)) {
+            if (!this.onBoard(right.x, right.y) || !this.onBoard(front.x, front.y)) {
               pf.hitEdge = true;
               break;
             }
@@ -260,12 +260,9 @@
               pf.turnAround();
             }
             front = pf.front();
-            if (!this.onBoard(front.x, front.y)) {
-              pf.hitEdge = true;
-              break;
-            } else if (this.board[front.x][front.y] === lastPlayer) {
+            if (this.board[front.x][front.y] === lastPlayer) {
               pf.path.push(pf.position());
-            } else {
+            } else if (this.onBoard(front.x, front.y)) {
               pf.move();
             }
             front = pf.front();
@@ -275,8 +272,6 @@
           if (!pf.hitEdge && pf.atStart()) {
             if (!pointInPolygon(pf.path, lastX, lastY) && pf.path.length > 0) {
               paths.push(pf.path);
-              console.log(s);
-              console.log(pf.path);
             }
           }
         }

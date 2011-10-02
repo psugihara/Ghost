@@ -149,7 +149,7 @@ class Game
         left = pf.left()
 
         while not pf.atStart() or pf.path.length < 2
-          if not @onBoard(right.x, right.y)
+          if not @onBoard(right.x, right.y) or not @onBoard(front.x, front.y)
             pf.hitEdge = true
             break # We hit the edge, this can't be an inner path.
 
@@ -166,12 +166,9 @@ class Game
 
           # Can we move ahead?
           front = pf.front()
-          if not @onBoard(front.x, front.y)
-            pf.hitEdge = true
-            break # We're caged by the edge of the board.
-          else if @board[front.x][front.y] == lastPlayer
+          if @board[front.x][front.y] == lastPlayer
             pf.path.push pf.position()
-          else
+          else if @onBoard(front.x, front.y)
             pf.move()
 
           # Check to the front and right.
@@ -179,13 +176,9 @@ class Game
           right = pf.right()
           left = pf.left()
 
-        # console.log pf.hitEdge
-        # console.log pf.path
         if not pf.hitEdge and pf.atStart()
           if not pointInPolygon(pf.path, lastX, lastY) and pf.path.length > 0
             paths.push pf.path # We didn't encircle the stone that was placed.
-            console.log s
-            console.log pf.path
     paths
 
   fill: (path, playerID) ->

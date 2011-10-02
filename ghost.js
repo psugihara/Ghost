@@ -68,6 +68,7 @@
       return this;
     };
     Pathfinder.prototype.move = function() {
+      this.path.push(this.position());
       switch (this.direction) {
         case 'E':
           this.x++;
@@ -81,7 +82,6 @@
         case 'N':
           this.y--;
       }
-      this.path.push(this.position());
       return this;
     };
     Pathfinder.prototype.front = function() {
@@ -175,6 +175,8 @@
       var num, numa;
       this.height = height;
       this.width = width;
+      this.checkWinner = __bind(this.checkWinner, this);
+      this.addPlayer = __bind(this.addPlayer, this);
       this.innerPaths = __bind(this.innerPaths, this);
       this.onBoard = __bind(this.onBoard, this);
       this.placeStone = __bind(this.placeStone, this);
@@ -193,16 +195,20 @@
         }
         return _results;
       })();
+      this.players = [];
     }
-    Game.prototype.placeStone = function(playerID, x, y) {
+    Game.prototype.placeStone = function(player, x, y) {
       var p, toFill, _i, _len;
       if (x < this.width && y < this.height && this.board[x][y] === EMPTY) {
-        this.board[x][y] = playerID;
+        this.board[x][y] = player.id;
         toFill = this.innerPaths(x, y);
         for (_i = 0, _len = toFill.length; _i < _len; _i++) {
           p = toFill[_i];
-          this.fill(p, playerID);
+          this.fill(p, player.id);
         }
+        player.score = _.select(_.flatten(this.board), function(id) {
+          return id === player.id;
+        }).length;
         return true;
       } else {
         return false;
@@ -243,6 +249,7 @@
           left = pf.left();
           while (!pf.atStart() || pf.path.length < 2) {
             if (!this.onBoard(right.x, right.y)) {
+              pf.hitEdge = true;
               break;
             }
             if (this.board[right.x][right.y] !== lastPlayer) {
@@ -252,18 +259,26 @@
             } else {
               pf.turnAround();
             }
-            pf.move();
+            front = pf.front();
+            if (!this.onBoard(front.x, front.y)) {
+              pf.hitEdge = true;
+              break;
+            } else if (this.board[front.x][front.y] === lastPlayer) {
+              pf.path.push(pf.position());
+            } else {
+              pf.move();
+            }
             front = pf.front();
             right = pf.right();
             left = pf.left();
           }
-          if (pf.atStart()) {
-            pf.path.pop();
+          if (!pf.hitEdge && pf.atStart()) {
+            if (!pointInPolygon(pf.path, lastX, lastY) && pf.path.length > 0) {
+              paths.push(pf.path);
+              console.log(s);
+              console.log(pf.path);
+            }
           }
-          if (!pointInPolygon(pf.path, lastX, lastY) && pf.path.length > 0) {
-            paths.push(pf.path);
-          }
-          pf.path = [];
         }
       }
       return paths;
@@ -290,6 +305,17 @@
         }).call(this));
       }
       return _results;
+    };
+    Game.prototype.addPlayer = function(name, id) {
+      var player;
+      player = new Player(name, id, 0);
+      this.players.push(player);
+      return player;
+    };
+    Game.prototype.checkWinner = function() {
+      return _.max(this.players, function(p) {
+        return p.score;
+      });
     };
     return Game;
   })();

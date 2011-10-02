@@ -146,13 +146,15 @@ now.addToBoard = function(obj){
   paper.rect(x,y,20,20);
 }
 
-oldBoard = [];
+var oldBoard = [];
 for(var i = 0; i < 16; i ++){
-  oldBoard[i] = [];
+  oldBoard[i] = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
 }
-
+//console.log(oldBoard);
 now.drawBoard = function(board){
-
+ // console.log(board);
+//console.log("old");
+  //console.log(oldBoard);
   //console.log("drawboard");
   if(board == "clear"){
     oldBoard = [];
@@ -167,7 +169,7 @@ now.drawBoard = function(board){
       if(jQuery.isArray(board[x])){
         for(y in board[x]){
           //console.log(board[x][y])
-          if(board[x][y] != oldBoard[x][y]){
+          if(board[x][y] != -1){
             paper.rect((x*20),(y*20),20,20).attr("fill","red");
           }
         }

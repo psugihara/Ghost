@@ -16,7 +16,7 @@ var everyone = nowjs.initialize(server);
 var game = new g.Game(16, 16);
 var peter = new g.Player('Peter', '33');
 var bill = new g.Player('Billy', '22');
-game.placeStone(peter, 1, 1)
+//game.placeStone(peter, 1, 1)
 g.printBoard(game)
 /*
 var game = new g.Game(10, 10);
@@ -57,6 +57,9 @@ everyone.now.addToImage = function(cObj){
   
   game.placeStone(bill, cObj.x, cObj.y);
   g.printBoard(game);
+  //console.log(game.board);
+  everyone.now.drawBoard(game.board);
+  
   /*
   if(liveBoard[x] == undefined){
       liveBoard[x][y] = name;
@@ -133,6 +136,10 @@ everyone.now.distributeMessage = function(message) {
 };
 
 everyone.now.clearBoard = function(){
+  game = new g.Game(16, 16);
+  peter = new g.Player('Peter', '33');
+  bill = new g.Player('Billy', '22');
+  
   liveBoard = [];
   for(var i = 0; i < 16; i ++){
     liveBoard[i] = [];

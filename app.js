@@ -57,6 +57,9 @@ everyone.now.addToImage = function(cObj){
   
   game.placeStone(bill, cObj.x, cObj.y);
   g.printBoard(game);
+  //console.log(game.board);
+  everyone.now.drawBoard(game.board);
+  
   /*
   if(liveBoard[x] == undefined){
       liveBoard[x][y] = name;

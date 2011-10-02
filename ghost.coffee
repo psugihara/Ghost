@@ -192,16 +192,6 @@ class Game
       for y in [_.min(yVals).._.max(yVals)]
         if pointInPolygon path, x, y
           @board[x][y] = playerID
-    # This is more efficient but doesn't work when there are solo points in a line.
-    # XXXXXX
-    # X    X
-    # X X  X
-    #  X X
-    # for x, xGroup of groups
-    #   sorted = _.pluck xGroup.sort(), 'y'
-    #   for i in [0..sorted.length] by 2
-    #     for y in [sorted[i]..(sorted[i+1] or sorted[i])]
-    #       @board[x][y] = playerID 
 
   addPlayer: (name, id) =>
     player = new Player(name, id, 0)

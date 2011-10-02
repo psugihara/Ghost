@@ -6,11 +6,21 @@
   NOTE: The coordinate system used for the board is inverted across the x-axis
   with the origin in the top right.
   */
-  var DIRS, EMPTY, Game, Pathfinder, Player, bill, g, peter, printBoard, _;
+  var DIRS, EMPTY, Game, Pathfinder, Player, pointInPolygon, printBoard, _;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   _ = require('underscore');
   DIRS = ['W', 'N', 'E', 'S'];
   EMPTY = -1;
+  pointInPolygon = __bind(function(poly, x, y) {
+    var pointsToLeft, pointsToRight;
+    pointsToLeft = _.filter(poly, function(p) {
+      return p.x < x && p.y === y;
+    }).length;
+    pointsToRight = _.filter(poly, function(p) {
+      return p.x > x && p.y === y;
+    }).length;
+    return pointsToRight % 2 === 1 && pointsToRight % 2 === 1;
+  }, this);
   Player = (function() {
     function Player(name, id, score) {
       this.name = name;
@@ -24,27 +34,39 @@
       this.x = x;
       this.y = y;
       this.direction = direction;
+      this.pointAtPosition = __bind(this.pointAtPosition, this);
+      this.atStart = __bind(this.atStart, this);
+      this.position = __bind(this.position, this);
+      this.move = __bind(this.move, this);
+      this.turnAround = __bind(this.turnAround, this);
+      this.turnRight = __bind(this.turnRight, this);
       this.path = [];
-      this.turnRight = (__bind(function() {
-        var dir;
-        dir = DIRS.indexOf(this.direction);
-        return __bind(function() {
-          dir = (dir + 1) % 4;
-          this.direction = DIRS[dir];
-          return this;
-        }, this);
-      }, this))();
       this.turnLeft = (__bind(function() {
-        var dir, revDirs;
-        dir = DIRS.indexOf(this.direction);
+        var revDirs;
         revDirs = DIRS.slice().reverse();
         return __bind(function() {
+          var dir;
+          dir = revDirs.indexOf(this.direction);
           dir = (dir + 1) % 4;
           this.direction = revDirs[dir];
           return this;
         }, this);
       }, this))();
     }
+    Pathfinder.prototype.turnRight = function() {
+      var dir;
+      dir = DIRS.indexOf(this.direction);
+      dir = (dir + 1) % 4;
+      this.direction = DIRS[dir];
+      return this;
+    };
+    Pathfinder.prototype.turnAround = function() {
+      var dir;
+      dir = DIRS.indexOf(this.direction);
+      dir = (dir + 2) % 4;
+      this.direction = DIRS[dir];
+      return this;
+    };
     Pathfinder.prototype.move = function() {
       switch (this.direction) {
         case 'E':
@@ -59,6 +81,7 @@
         case 'N':
           this.y--;
       }
+      this.path.push(this.position());
       return this;
     };
     Pathfinder.prototype.front = function() {
@@ -109,73 +132,41 @@
           };
       }
     };
+    Pathfinder.prototype.left = function() {
+      switch (this.direction) {
+        case 'E':
+          return {
+            x: this.x,
+            y: this.y - 1
+          };
+        case 'S':
+          return {
+            x: this.x + 1,
+            y: this.y
+          };
+        case 'W':
+          return {
+            x: this.x,
+            y: this.y + 1
+          };
+        case 'N':
+          return {
+            x: this.x - 1,
+            y: this.y
+          };
+      }
+    };
     Pathfinder.prototype.position = function() {
       return {
         x: this.x,
         y: this.y
       };
     };
-    Pathfinder.prototype.farEast = function() {
-      var pos;
-      return _.max((function() {
-        var _i, _len, _ref, _results;
-        _ref = this.path;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          pos = _ref[_i];
-          _results.push(pos[0]);
-        }
-        return _results;
-      }).call(this));
+    Pathfinder.prototype.atStart = function() {
+      return _.isEqual(this.path[0], this.position());
     };
-    Pathfinder.prototype.farWest = function() {
-      var pos;
-      return _.min((function() {
-        var _i, _len, _ref, _results;
-        _ref = this.path;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          pos = _ref[_i];
-          _results.push(pos[0]);
-        }
-        return _results;
-      }).call(this));
-    };
-    Pathfinder.prototype.farNorth = function() {
-      var pos;
-      return _.min((function() {
-        var _i, _len, _ref, _results;
-        _ref = this.path;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          pos = _ref[_i];
-          _results.push(pos[1]);
-        }
-        return _results;
-      }).call(this));
-    };
-    Pathfinder.prototype.farSouth = function() {
-      var pos;
-      return _.max((function() {
-        var _i, _len, _ref, _results;
-        _ref = this.path;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          pos = _ref[_i];
-          _results.push(pos[1]);
-        }
-        return _results;
-      }).call(this));
-    };
-    Pathfinder.prototype.pointInPath = function(x, y) {
-      var pointsToLeft, pointsToRight;
-      pointsToLeft = _.filter(this.path, function(p) {
-        return p.x < x && p.y === y;
-      });
-      pointsToRight = _.filter(this.path, function(p) {
-        return p.x > x && p.y === y;
-      });
-      return pointsToRight % 2 === 1 && pointsToRight % 2 === 1;
+    Pathfinder.prototype.pointAtPosition = function(p) {
+      return p.x === this.x && p.y === this.y;
     };
     return Pathfinder;
   })();
@@ -185,6 +176,7 @@
       this.height = height;
       this.width = width;
       this.innerPaths = __bind(this.innerPaths, this);
+      this.onBoard = __bind(this.onBoard, this);
       this.placeStone = __bind(this.placeStone, this);
       this.board = (function() {
         var _results;
@@ -202,29 +194,40 @@
         return _results;
       })();
     }
-    Game.prototype.placeStone = function(player, x, y) {
+    Game.prototype.placeStone = function(playerID, x, y) {
+      var p, toFill, _i, _len;
       if (x < this.width && y < this.height && this.board[x][y] === EMPTY) {
-        this.board[x][y] = player.id;
-        this.fill(this.innerPaths(x, y));
+        this.board[x][y] = playerID;
+        toFill = this.innerPaths(x, y);
+        for (_i = 0, _len = toFill.length; _i < _len; _i++) {
+          p = toFill[_i];
+          this.fill(p, playerID);
+        }
         return true;
       } else {
         return false;
       }
     };
+    Game.prototype.onBoard = function(x, y) {
+      return x < this.width && x >= 0 && y < this.height && y >= 0;
+    };
     Game.prototype.innerPaths = function(lastX, lastY) {
-      var front, i, lastPlayer, paths, pf, right, s, starts, _len;
+      var front, i, lastPlayer, left, paths, pf, right, s, starts, _len;
       paths = [];
       starts = [
         {
           x: lastX,
           y: lastY + 1,
-          d: 'W',
+          d: 'W'
+        }, {
           x: lastX - 1,
           y: lastY,
-          d: 'N',
+          d: 'N'
+        }, {
           x: lastX,
           y: lastY - 1,
-          d: 'E',
+          d: 'E'
+        }, {
           x: lastX + 1,
           y: lastY,
           d: 'S'
@@ -233,47 +236,80 @@
       lastPlayer = this.board[lastX][lastY];
       for (i = 0, _len = starts.length; i < _len; i++) {
         s = starts[i];
-        if (this.board[s.x][s.y] !== lastPlayer && (this.board[s.x][s.y] != null) && !s.visited) {
+        if (this.onBoard(s.x, s.y) && this.board[s.x][s.y] !== lastPlayer) {
           pf = new Pathfinder(s.x, s.y, s.d);
           front = pf.front();
           right = pf.right();
-          while (!_.isEqual(_.last(pf.path), _.first(pf.path)) || pf.path.length < 4) {
-            pf.paths.push(pf.position());
-            if (this.board[right.x][right.y] !== lastPlayer) {
-              pf.turnRight().move();
-            } else if (!(this.board[front.x] != null) || !(this.board[front.x][front.y] != null)) {
+          left = pf.left();
+          while (!pf.atStart() || pf.path.length < 2) {
+            if (!this.onBoard(right.x, right.y)) {
               break;
-            } else if (this.board[front.x][front.y] === lastPlayer) {
-              pf.turnLeft().move();
-            } else if (this.board[front.x][front.y] !== lastPlayer) {
-              pf.move();
             }
+            if (this.board[right.x][right.y] !== lastPlayer) {
+              pf.turnRight();
+            } else if (this.onBoard(front.x, front.y) && this.board[front.x][front.y] !== lastPlayer) {} else if (this.onBoard(left.x, left.y) && this.board[left.x][left.y] !== lastPlayer) {
+              pf.turnLeft();
+            } else {
+              pf.turnAround();
+            }
+            pf.move();
             front = pf.front();
             right = pf.right();
+            left = pf.left();
           }
-          s.visited = true;
-          if (!pf.pointInPath(s.x(s.y))) {
+          if (pf.atStart()) {
+            pf.path.pop();
+          }
+          if (!pointInPolygon(pf.path, lastX, lastY) && pf.path.length > 0) {
             paths.push(pf.path);
           }
+          pf.path = [];
         }
       }
       return paths;
     };
-    Game.prototype.fill = function(path) {};
+    Game.prototype.fill = function(path, playerID) {
+      var groups, p, x, xGroup, y, _i, _len, _results;
+      groups = _.groupBy(path, function(p) {
+        return p.x;
+      });
+      for (_i = 0, _len = path.length; _i < _len; _i++) {
+        p = path[_i];
+        this.board[p.x][p.y] = playerID;
+      }
+      _results = [];
+      for (x in groups) {
+        xGroup = groups[x];
+        _results.push((function() {
+          var _ref, _ref2, _results2;
+          _results2 = [];
+          for (y = _ref = _.min(xGroup), _ref2 = _.max(xGroup); _ref <= _ref2 ? y <= _ref2 : y >= _ref2; _ref <= _ref2 ? y++ : y--) {
+            _results2.push(pointInPolygon(path, x, y) ? this.board[x][y] = playerID : void 0);
+          }
+          return _results2;
+        }).call(this));
+      }
+      return _results;
+    };
     return Game;
   })();
   printBoard = function(g) {
-    var row, _i, _len, _ref, _results;
-    _ref = g.board;
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      row = _ref[_i];
-      _results.push(console.log(row));
+    var colNum, row, s, _i, _len, _ref, _ref2;
+    console.log('================================');
+    s = '';
+    for (colNum = 0, _ref = g.board[0].length - 1; 0 <= _ref ? colNum <= _ref : colNum >= _ref; 0 <= _ref ? colNum++ : colNum--) {
+      s = '';
+      _ref2 = g.board;
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        row = _ref2[_i];
+        s += row[colNum];
+        s += ' ';
+      }
+      console.log(s);
     }
-    return _results;
+    return console.log('================================');
   };
-  g = new Game(10, 10);
-  peter = new Player('Peter', 1);
-  bill = new Player('Bill', 2);
-  g.placeStone(peter, 1, 1);
+  exports.Game = Game;
+  exports.Player = Player;
+  exports.printBoard = printBoard;
 }).call(this);

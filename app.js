@@ -16,7 +16,7 @@ var everyone = nowjs.initialize(server);
 var game = new g.Game(16, 16);
 var peter = new g.Player('Peter', '33');
 var bill = new g.Player('Billy', '22');
-game.placeStone(peter.id, 1, 1)
+game.placeStone(peter, 1, 1)
 g.printBoard(game)
 /*
 var game = new g.Game(10, 10);
@@ -55,7 +55,7 @@ everyone.now.addToImage = function(cObj){
   var x = cObj.x;
   var y = cObj.y;
   
-  game.placeStone(bill.id, cObj.x, cObj.y);
+  game.placeStone(bill, cObj.x, cObj.y);
   g.printBoard(game);
   /*
   if(liveBoard[x] == undefined){

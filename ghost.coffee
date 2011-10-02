@@ -60,12 +60,12 @@ class Pathfinder
     @
 
   move: =>
+    @path.push @position()
     switch @direction
       when 'E' then @x++
       when 'S' then @y++
       when 'W' then @x--
       when 'N' then @y--
-    @path.push @position()
     @
 
   front: ->
@@ -101,14 +101,16 @@ class Pathfinder
 class Game
   constructor: (@height, @width) ->
     @board = ((EMPTY for numa in [1..width]) for num in [1..height])
+    @players = []
 
-  placeStone: (playerID, x, y) =>
+  placeStone: (player, x, y) =>
     if x < @width and y < @height and @board[x][y] == EMPTY
       # That spot is on the board and it's empty.
-      @board[x][y] = playerID
+      @board[x][y] = player.id
       toFill =  @innerPaths(x, y)
       for p in toFill
-        @fill p, playerID
+        @fill p, player.id
+      player.score = _.select(_.flatten(@board), (id) -> id == player.id).length
       true
     else
       false
@@ -128,6 +130,7 @@ class Game
     paths = []
     # We look for 'inner paths' by placing our right hand on the wall and
     # walking around. The wall is the last player's stones.
+    # Adapted from http://www.micromouseinfo.com/introduction/wallfollow.html 
     starts = [
       {x: lastX,     y: lastY + 1, d: 'W'}
       {x: lastX - 1, y: lastY,     d: 'N'}
@@ -146,9 +149,10 @@ class Game
         left = pf.left()
 
         while not pf.atStart() or pf.path.length < 2
-          if not @onBoard(right.x, right.y)
+          if not @onBoard(right.x, right.y) or not @onBoard(front.x, front.y)
+            pf.hitEdge = true
             break # We hit the edge, this can't be an inner path.
-          # http://www.micromouseinfo.com/introduction/wallfollow.html
+
           if @board[right.x][right.y] != lastPlayer
             pf.turnRight()
 
@@ -160,19 +164,21 @@ class Game
           else
             pf.turnAround()
 
-          pf.move()
+          # Can we move ahead?
+          front = pf.front()
+          if @board[front.x][front.y] == lastPlayer
+            pf.path.push pf.position()
+          else if @onBoard(front.x, front.y)
+            pf.move()
 
           # Check to the front and right.
           front = pf.front()
           right = pf.right()
           left = pf.left()
 
-        if pf.atStart()
-          pf.path.pop() # We only want 1 copy of the starting pos.
-
-        if not pointInPolygon(pf.path, lastX, lastY) and pf.path.length > 0
-          paths.push pf.path
-        pf.path = []
+        if not pf.hitEdge and pf.atStart()
+          if not pointInPolygon(pf.path, lastX, lastY) and pf.path.length > 0
+            paths.push pf.path # We didn't encircle the stone that was placed.
     paths
 
   fill: (path, playerID) ->
@@ -196,10 +202,15 @@ class Game
     #     for y in [sorted[i]..(sorted[i+1] or sorted[i])]
     #       @board[x][y] = playerID 
 
+  addPlayer: (name, id) =>
+    player = new Player(name, id, 0)
+    @players.push player
+    player
+
+  checkWinner: =>
+    _.max @players, (p) -> p.score
 
 # DEBUGGING
-# #########
-
 printBoard = (g) ->
   console.log '================================'
   s = ''
@@ -214,24 +225,3 @@ printBoard = (g) ->
 exports.Game = Game
 exports.Player = Player
 exports.printBoard = printBoard
-# g = new Game(10, 10)
-# peter = new Player('Peter', 33)
-# bill = new Player('Bill', 2) 
-# g.placeStone peter, 1, 1
-# g.placeStone peter, 1, 2
-# g.placeStone peter, 1, 3
-# g.placeStone peter, 1, 4
-# g.placeStone peter, 2, 4
-# g.placeStone peter, 3, 4
-# g.placeStone peter, 3, 4
-# g.placeStone peter, 4, 3
-# g.placeStone peter, 4, 2
-# g.placeStone peter, 4, 1
-# g.placeStone peter, 3, 1
-# g.placeStone peter, 2, 1
-# g.placeStone peter, 0, 1
-# printBoard g 
-
-
-
-

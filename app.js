@@ -18,6 +18,19 @@ var peter = new g.Player('Peter', 33);
 var bill = new g.Player('Billy', 22);
 game.placeStone(peter.id, 1, 1)
 g.printBoard(game)
+var game = new g.Game(10, 10);
+var peter = game.addPlayer('peter', '33');
+var bill = game.addPlayer('bill', '22');
+game.placeStone(peter, 1, 1);
+game.placeStone(peter, 2, 0);
+game.placeStone(peter, 3, 0);
+game.placeStone(peter, 3, 2);
+game.placeStone(peter, 1, 2);
+game.placeStone(peter, 2, 3);
+game.placeStone(peter, 3, 1);
+console.log(peter.score);
+console.log(game.checkWinner());
+g.printBoard(game);
 
 
 everyone.now.distributeMessage = function(message){

@@ -9,8 +9,16 @@ var server = require('http').createServer(function(req, response){
 });
 server.listen(8080);
 var nowjs = require("now");
-//var game = require("./ghost");
+var g = require("./ghost");
 var everyone = nowjs.initialize(server);
+
+// This is how you use the game...
+var game = new g.Game(10, 10);
+var peter = new g.Player('Peter', 33);
+var bill = new g.Player('Bill', 2);
+game.placeStone(peter.id, 1, 1)
+g.printBoard(game)
+
 
 everyone.now.distributeMessage = function(message){
   everyone.now.receiveMessage(this.now.name, message);

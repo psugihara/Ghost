@@ -211,23 +211,26 @@ printBoard = (g) ->
     console.log s
   console.log '================================'  
 
-g = new Game(10, 10)
-peter = new Player('Peter', 33)
-bill = new Player('Bill', 2) 
-g.placeStone peter, 1, 1
-g.placeStone peter, 1, 2
-g.placeStone peter, 1, 3
-g.placeStone peter, 1, 4
-g.placeStone peter, 2, 4
-g.placeStone peter, 3, 4
-g.placeStone peter, 3, 4
-g.placeStone peter, 4, 3
-g.placeStone peter, 4, 2
-g.placeStone peter, 4, 1
-g.placeStone peter, 3, 1
-g.placeStone peter, 2, 1
-g.placeStone peter, 0, 1
-printBoard g 
+exports.Game = Game
+exports.Player = Player
+exports.printBoard = printBoard
+# g = new Game(10, 10)
+# peter = new Player('Peter', 33)
+# bill = new Player('Bill', 2) 
+# g.placeStone peter, 1, 1
+# g.placeStone peter, 1, 2
+# g.placeStone peter, 1, 3
+# g.placeStone peter, 1, 4
+# g.placeStone peter, 2, 4
+# g.placeStone peter, 3, 4
+# g.placeStone peter, 3, 4
+# g.placeStone peter, 4, 3
+# g.placeStone peter, 4, 2
+# g.placeStone peter, 4, 1
+# g.placeStone peter, 3, 1
+# g.placeStone peter, 2, 1
+# g.placeStone peter, 0, 1
+# printBoard g 
 
 
 

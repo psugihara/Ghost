@@ -13,9 +13,9 @@ var g = require("./ghost");
 var everyone = nowjs.initialize(server);
 
 // This is how you use the game...
-var game = new g.Game(10, 10);
+var game = new g.Game(16, 16);
 var peter = new g.Player('Peter', 33);
-var bill = new g.Player('Bill', 2);
+var bill = new g.Player('Billy', 22);
 game.placeStone(peter.id, 1, 1)
 g.printBoard(game)
 
@@ -36,9 +36,14 @@ for(var i = 0; i < 16; i ++){
 }
 
 everyone.now.addToImage = function(cObj){
+  console.log(cObj);
   var name = cObj.name;
   var x = cObj.x;
   var y = cObj.y;
+  
+  game.placeStone(bill.id, cObj.x, cObj.y);
+  g.printBoard(game);
+  /*
   if(liveBoard[x] == undefined){
       liveBoard[x][y] = name;
       everyone.now.drawBoard(liveBoard);
@@ -52,6 +57,7 @@ everyone.now.addToImage = function(cObj){
   }
   else{
   }
+  */
   
   
   /*

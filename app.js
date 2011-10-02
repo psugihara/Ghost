@@ -14,10 +14,11 @@ var everyone = nowjs.initialize(server);
 
 // This is how you use the game...
 var game = new g.Game(16, 16);
-var peter = new g.Player('Peter', 33);
-var bill = new g.Player('Billy', 22);
+var peter = new g.Player('Peter', '33');
+var bill = new g.Player('Billy', '22');
 game.placeStone(peter.id, 1, 1)
 g.printBoard(game)
+/*
 var game = new g.Game(10, 10);
 var peter = game.addPlayer('peter', '33');
 var bill = game.addPlayer('bill', '22');
@@ -31,7 +32,7 @@ game.placeStone(peter, 3, 1);
 console.log(peter.score);
 console.log(game.checkWinner());
 g.printBoard(game);
-
+*/
 
 everyone.now.distributeMessage = function(message){
   everyone.now.receiveMessage(this.now.name, message);

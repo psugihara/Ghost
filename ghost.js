@@ -279,7 +279,7 @@
       return paths;
     };
     Game.prototype.fill = function(path, playerID) {
-      var groups, p, x, xGroup, y, _i, _len, _results;
+      var groups, p, x, xGroup, y, yVals, _i, _len, _results;
       groups = _.groupBy(path, function(p) {
         return p.x;
       });
@@ -290,10 +290,11 @@
       _results = [];
       for (x in groups) {
         xGroup = groups[x];
+        yVals = _.pluck(xGroup, 'y');
         _results.push((function() {
           var _ref, _ref2, _results2;
           _results2 = [];
-          for (y = _ref = _.min(xGroup), _ref2 = _.max(xGroup); _ref <= _ref2 ? y <= _ref2 : y >= _ref2; _ref <= _ref2 ? y++ : y--) {
+          for (y = _ref = _.min(yVals), _ref2 = _.max(yVals); _ref <= _ref2 ? y <= _ref2 : y >= _ref2; _ref <= _ref2 ? y++ : y--) {
             _results2.push(pointInPolygon(path, x, y) ? this.board[x][y] = playerID : void 0);
           }
           return _results2;

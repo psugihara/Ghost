@@ -188,7 +188,8 @@ class Game
       @board[p.x][p.y] = playerID
     # Fill inside of path.
     for x, xGroup of groups
-      for y in [_.min(xGroup).._.max(xGroup)]
+      yVals = _.pluck xGroup, 'y'
+      for y in [_.min(yVals).._.max(yVals)]
         if pointInPolygon path, x, y
           @board[x][y] = playerID
     # This is more efficient but doesn't work when there are solo points in a line.

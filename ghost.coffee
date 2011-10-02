@@ -102,13 +102,13 @@ class Game
   constructor: (@height, @width) ->
     @board = ((EMPTY for numa in [1..width]) for num in [1..height])
 
-  placeStone: (player, x, y) =>
+  placeStone: (playerID, x, y) =>
     if x < @width and y < @height and @board[x][y] == EMPTY
       # That spot is on the board and it's empty.
-      @board[x][y] = player.id
+      @board[x][y] = playerID
       toFill =  @innerPaths(x, y)
       for p in toFill
-        @fill p, player.id
+        @fill p, playerID
       true
     else
       false

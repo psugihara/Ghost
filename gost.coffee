@@ -76,6 +76,7 @@ class Game
 
   # Param stones is an array of [x,y] arrays.
   placeStones: (player, stones) =>
+    _.map stones, (s) -> @board[s[0]][s[1]] = player.id
     neighbors = _.union(_.map(stones, @neighbors))
     emptyNeighbors = _.filter neighbors, (n) -> @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
     didFlood = false
@@ -84,6 +85,8 @@ class Game
       emptyNeighbors = _.without emptyNeighbors flooded.toFlood
       if not didFlood and flooded.didFlood
         didFlood = true
+    if not didFlood # then unplace the stoens
+      _.map stones, (s) -> @board[s[0]][s[1]] = EMPTY
     didFlood
 
   addPlayer: (name, id) =>

@@ -98,17 +98,20 @@ now.askName = function(string){
   
   start();
  
-  
 
   
 });
 
 
+
 function start(){
   
   //nameTaken = now.ArrayIndexOf(now.clients, prompt("name?")) == -1 ? false : true;
-   paper = Raphael(200,50,320,320);
-   r = paper.rect(0,0,320,320).attr("fill","white").attr("stroke", "blue");
+  
+  width = now.GAMEWIDE*now.GAMEUNIT;
+  height = now.GAMEHIGH*now.GAMEUNIT;
+   paper = Raphael(200,50,width,height);
+   r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke", "blue");
    var path = paper.path();
    $(window).mousedown(function(){
        draw = true;
@@ -122,11 +125,11 @@ function start(){
    var lp = "";  
    $(r.node).mousemove(function(e){
      if(draw){
-       var x = Math.floor(e.offsetX/20);
-       var y = Math.floor(e.offsetY/20);
+       var x = Math.floor(e.offsetX/now.GAMEUNIT);
+       var y = Math.floor(e.offsetY/now.GAMEUNIT);
        var cp = x+","+y;
        if (lp != cp){
-         //console.log ("lp="+lp+"//cp="+cp);
+         console.log ("lp="+lp+"//cp="+cp);
          lp = cp;
          now.addToImage({name:now.name,x:x, y:y});
        }
@@ -141,26 +144,25 @@ var colors = ["red", "blue", "green", "yellow"];
 
 now.addToBoard = function(obj){
   var name = obj.name,
-  x = obj.x*20,
-  y = obj.y*20;
-  paper.rect(x,y,20,20);
+  x = obj.x*now.GAMEUNIT,
+  y = obj.y*now.GAMEUNIT;
+  paper.rect(x,y,now.GAMEUNIT,now.GAMEUNIT);
 }
 
-var oldBoard = [];
-for(var i = 0; i < 16; i ++){
-  oldBoard[i] = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
-}
-//console.log(oldBoard);
+
+
 now.drawBoard = function(board){
- // console.log(board);
-//console.log("old");
-  //console.log(oldBoard);
-  //console.log("drawboard");
+  console.log("drawBoard called");
   if(board == "clear"){
-    oldBoard = [];
-    for(var i = 0; i < 16; i ++){
-      oldBoard[i] = [];
+    now.oldBoard = [];
+    for(i= 0;i<now.GAMEWIDE;i++){
+      now.oldBoard[i] = [];
+      for(var j = 0; j < now.GAMEHIGH; j++){
+        now.oldBoard[i][j] = -1;
+      }
     }
+   // console.log("new old board");
+   // console.log(now.oldBoard);
     paper.clear();
     start();
   }
@@ -169,21 +171,17 @@ now.drawBoard = function(board){
       if(jQuery.isArray(board[x])){
         for(y in board[x]){
           //console.log(board[x][y])
-          if(board[x][y] != -1){
-            paper.rect((x*20),(y*20),20,20).attr("fill","red");
+          if(board[x][y] != now.oldBoard[x][y]){
+            paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("fill","red");
           }
         }
       }
     }
+    now.oldBoard = board;
+    
   }
-  oldBoard = board;
 }
-now.DONTaddToBoard = function(obj){
-  var name = obj.name,
-  x = obj.x*20,
-  y = obj.y*20;
-  paper.rect(x,y,20,20).attr("stroke","red");
-}
+
 
  function drawing(varname){
      var me = ArrayIndexOf(now.clients, function(obj){

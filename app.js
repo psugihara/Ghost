@@ -12,12 +12,18 @@ var nowjs = require("now");
 var g = require("./ghost");
 var everyone = nowjs.initialize(server);
 
+everyone.now.GAMEUNIT = 20;
+everyone.now.GAMEWIDE = 30;
+everyone.now.GAMEHIGH = 30;
+
 // This is how you use the game...
-var game = new g.Game(16, 16);
+var game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
 var peter = new g.Player('Peter', '33');
 var bill = new g.Player('Billy', '22');
 //game.placeStone(peter, 1, 1)
 g.printBoard(game)
+
+console.log(bill);
 /*
 var game = new g.Game(10, 10);
 var peter = game.addPlayer('peter', '33');
@@ -107,7 +113,21 @@ everyone.now.setName = function(name){
     this.now.name = name;
     everyone.now.clients.push(myObj);
     everyone.now.updateList();
-    everyone.now.drawBoard(liveBoard);
+  
+  this.now.oldBoard = [];
+ // console.log(everyone.now.GAMEWIDE);
+  for(i= 0;i<everyone.now.GAMEWIDE;i++){
+    this.now.oldBoard[i] = [];
+  //  console.log("i");
+    for(var j = 0; j < everyone.now.GAMEHIGH; j++){
+      this.now.oldBoard[i][j] = -1;
+    }
+  }
+
+  this.now.drawBoard(game.board);
+
+
+
     console.log("Joined: " + name);
   }
 }
@@ -136,14 +156,25 @@ everyone.now.distributeMessage = function(message) {
 };
 
 everyone.now.clearBoard = function(){
-  game = new g.Game(16, 16);
+  game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
   peter = new g.Player('Peter', '33');
   bill = new g.Player('Billy', '22');
-  
-  liveBoard = [];
-  for(var i = 0; i < 16; i ++){
-    liveBoard[i] = [];
+  /*
+  everyone.now.oldBoard = [];
+  console.log(everyone.now.oldBoard);
+  for(i= 0;i<everyone.now.GAMEWIDE;i++){
+    everyone.now.oldBoard[i] = [];
+    console.log(everyone.now.oldBoard[i]);
+    for(var j = 0; j < everyone.now.GAMEHIGH; j++){
+      everyone.now.oldBoard[i][j] = -1;
+      console.log(everyone.now.oldBoard[i][j]);
+    }
+    console.log(everyone.now.oldBoard[i]);
   }
+  console.log("cleared old board");
+  console.log(everyone.now.oldBoard);
+  console.log("cleared old board");
+  */
   everyone.now.drawBoard("clear");
   
 }

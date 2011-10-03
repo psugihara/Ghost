@@ -9,7 +9,7 @@ var server = require('http').createServer(function(req, response){
 });
 server.listen(8080);
 var nowjs = require("now");
-var g = require("./ghost");
+var g = require("./gost");
 var everyone = nowjs.initialize(server);
 
 everyone.now.GAMEUNIT = 20;

@@ -1,16 +1,20 @@
 var fs = require('fs');
 var $ = require('jquery');
-var server = require('http').createServer(function(req, response){
-  fs.readFile(__dirname+'/index2.html', function(err, data){
-    response.writeHead(200, {'Content-Type':'text/html'});
-    response.write(data);
-    response.end();
+var express = require('express');
+
+var app = express.createServer();
+app.use(express.static(__dirname + '/../client/resources/'));
+app.get('/', function(req, res){
+  fs.readFile(__dirname+'/../client/index2.html', function(err, data){
+    res.writeHead(200, {'Content-Type':'text/html'});
+    res.write(data);
+    res.end();
   });
 });
-server.listen(8080);
+app.listen(8080);
 var nowjs = require("now");
 var g = require("./gost");
-var everyone = nowjs.initialize(server);
+var everyone = nowjs.initialize(app);
 
 everyone.now.GAMEUNIT = 20;
 everyone.now.GAMEWIDE = 30;

@@ -22,7 +22,8 @@ class Player
   constructor: (@name, @id, @score) ->
 
 class Game
-  constructor: (@height, @width) ->
+  constructor: (@height, @width, @gameoverRatio) ->
+    @gameoverRatio ?= .8 # min percent of board full before game is over
     @board = ((EMPTY for numa in [1..width]) for num in [1..height])
     @players = []
 
@@ -96,6 +97,9 @@ class Game
 
   checkWinner: =>
     _.max @players, (p) -> p.score
+
+  checkGameOver: =>
+    _.without(_.flatten(@board), EMPTY).length < @height*@width*@gameoverRatio
 
 printBoard = (g) ->
   # FOR DEBUGGING  

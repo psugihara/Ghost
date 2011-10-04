@@ -30,15 +30,20 @@
     return Player;
   })();
   Game = (function() {
-    function Game(height, width) {
-      var num, numa;
+    function Game(height, width, gameoverRatio) {
+      var num, numa, _ref;
       this.height = height;
       this.width = width;
+      this.gameoverRatio = gameoverRatio;
+      this.checkGameOver = __bind(this.checkGameOver, this);
       this.checkWinner = __bind(this.checkWinner, this);
       this.addPlayer = __bind(this.addPlayer, this);
       this.placeStones = __bind(this.placeStones, this);
       this.floodFill = __bind(this.floodFill, this);
       this.onBoard = __bind(this.onBoard, this);
+      if ((_ref = this.gameoverRatio) == null) {
+        this.gameoverRatio = .8;
+      }
       this.board = (function() {
         var _results;
         _results = [];
@@ -128,20 +133,29 @@
       return [[x + 1][y], [x - 1][y], [x][y - 1], [x][y + 1]];
     };
     Game.prototype.placeStones = function(player, stones) {
-      var didFlood, emptyNeighbors, flooded, neighbors, x, y, _i, _len, _ref, _results;
+      var didFlood, emptyNeighbors, flooded, neighbors, x, y, _i, _len, _ref;
+      _.map(stones, function(s) {
+        return this.board[s[0]][s[1]] = player.id;
+      });
       neighbors = _.union(_.map(stones, this.neighbors));
       emptyNeighbors = _.filter(neighbors, function(n) {
         return (this.board[n[0]] != null) && this.board[n[0]][n[1]] === EMPTY;
       });
       didFlood = false;
-      _results = [];
       for (_i = 0, _len = emptyNeighbors.length; _i < _len; _i++) {
         _ref = emptyNeighbors[_i], x = _ref[0], y = _ref[1];
         flooded = floodFill(x, y, player.id);
         emptyNeighbors = _.without(emptyNeighbors(flooded.toFlood));
-        _results.push(!didFlood && flooded.didFlood ? didFlood = true : void 0);
+        if (!didFlood && flooded.didFlood) {
+          didFlood = true;
+        }
       }
-      return _results;
+      if (!didFlood) {
+        _.map(stones, function(s) {
+          return this.board[s[0]][s[1]] = EMPTY;
+        });
+      }
+      return didFlood;
     };
     Game.prototype.addPlayer = function(name, id) {
       var player;
@@ -153,6 +167,9 @@
       return _.max(this.players, function(p) {
         return p.score;
       });
+    };
+    Game.prototype.checkGameOver = function() {
+      return _.without(_.flatten(this.board), EMPTY).length < this.height * this.width * this.gameoverRatio;
     };
     return Game;
   })();

@@ -1,6 +1,8 @@
-var fs = require('fs');
-var $ = require('jquery');
-var express = require('express');
+var fs = require('fs')
+  , $ = require('jquery')
+  , express = require('express')
+  , nowjs = require("now")
+  , g = require("./gost");
 
 var app = express.createServer();
 app.use(express.static(__dirname + '/../client/resources/'));
@@ -12,8 +14,8 @@ app.get('/', function(req, res){
   });
 });
 app.listen(8080);
-var nowjs = require("now");
-var g = require("./gost");
+
+
 var everyone = nowjs.initialize(app);
 
 everyone.now.GAMEUNIT = 20;

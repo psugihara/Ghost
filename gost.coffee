@@ -52,11 +52,11 @@ class Game
         shouldFlood = false
 
       between = ([x, n[1]] for x in [w[0]+1..e[0]-1])
-      toFlood.append between
+      toFlood.concat between
 
       # Check/add nodes north/south of nodes between n and w.
-      q.append (xy for xy in between when @board[x][xy[1]-1] == EMPTY)
-      q.append (xy for xy in between when @board[x][xy[1]+1] == EMPTY)
+      q.concat (xy for xy in between when @board[x]? and @board[x][xy[1]-1] == EMPTY)
+      q.concat (xy for xy in between when @board[x]? and @board[x][xy[1]+1] == EMPTY)
 
     if shouldFlood # then flood
       for [x, y] in toFlood
@@ -79,12 +79,11 @@ class Game
   placeStones: (player, stones) =>
     _.map stones, (s) => @board[s[0]][s[1]] = player.id
     neighbors = _.uniq [].concat(_.map(stones, @neighbors)...)
-    console.log neighbors
     emptyNeighbors = _.filter neighbors, (n) => @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
     didFlood = false
     for [x, y] in emptyNeighbors
       flooded = @floodFill x, y, player.id
-      emptyNeighbors = _.without emptyNeighbors flooded.toFlood
+      emptyNeighbors = _.without(emptyNeighbors, flooded.toFlood...)
       if not didFlood and flooded.didFlood
         didFlood = true
     if not didFlood # then unplace the stoens

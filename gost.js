@@ -7,7 +7,7 @@
   with the origin in the top right.
   */
   var DIRS, EMPTY, Game, Player, pointInPolygon, printBoard, _;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
   _ = require('underscore');
   DIRS = ['W', 'N', 'E', 'S'];
   EMPTY = -1;
@@ -91,24 +91,24 @@
           }
           return _results;
         })();
-        toFlood.append(between);
-        q.append((function() {
+        toFlood.concat(between);
+        q.concat((function() {
           var _i, _len, _results;
           _results = [];
           for (_i = 0, _len = between.length; _i < _len; _i++) {
             xy = between[_i];
-            if (this.board[x][xy[1] - 1] === EMPTY) {
+            if ((this.board[x] != null) && this.board[x][xy[1] - 1] === EMPTY) {
               _results.push(xy);
             }
           }
           return _results;
         }).call(this));
-        q.append((function() {
+        q.concat((function() {
           var _i, _len, _results;
           _results = [];
           for (_i = 0, _len = between.length; _i < _len; _i++) {
             xy = between[_i];
-            if (this.board[x][xy[1] + 1] === EMPTY) {
+            if ((this.board[x] != null) && this.board[x][xy[1] + 1] === EMPTY) {
               _results.push(xy);
             }
           }
@@ -138,7 +138,6 @@
         return this.board[s[0]][s[1]] = player.id;
       }, this));
       neighbors = _.uniq((_ref = []).concat.apply(_ref, _.map(stones, this.neighbors)));
-      console.log(neighbors);
       emptyNeighbors = _.filter(neighbors, __bind(function(n) {
         return (this.board[n[0]] != null) && this.board[n[0]][n[1]] === EMPTY;
       }, this));
@@ -146,7 +145,7 @@
       for (_i = 0, _len = emptyNeighbors.length; _i < _len; _i++) {
         _ref2 = emptyNeighbors[_i], x = _ref2[0], y = _ref2[1];
         flooded = this.floodFill(x, y, player.id);
-        emptyNeighbors = _.without(emptyNeighbors(flooded.toFlood));
+        emptyNeighbors = _.without.apply(_, [emptyNeighbors].concat(__slice.call(flooded.toFlood)));
         if (!didFlood && flooded.didFlood) {
           didFlood = true;
         }

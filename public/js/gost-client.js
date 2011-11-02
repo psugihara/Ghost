@@ -47,9 +47,9 @@ var r;
 now.ready(function(){
   nameTaken = true;
 //checkName("name?");
-now.askName = function(string){
-  now.setName(prompt(string));
-}
+  now.askName = function(string){
+    now.setName(prompt(string));
+  }
   now.askName("Name?");
   start();
 });
@@ -62,33 +62,33 @@ function start(){
   
   width = now.GAMEWIDE*now.GAMEUNIT;
   height = now.GAMEHIGH*now.GAMEUNIT;
-   paper = Raphael(200,50,width,height);
-   r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke", "blue");
-   var path = paper.path();
-   $(window).mousedown(function(){
-       draw = true;
+  paper = Raphael(200,50,width,height);
+  r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke", "blue");
+  var path = paper.path();
+  $(window).mousedown(function(){
+     draw = true;
      //console.log(draw);
+  });
+  $(window).mouseup(function(){
+     draw = false;
+     //now.addToImage({name:now.name,x:0,y:0});
    });
-   $(window).mouseup(function(){
-       draw = false;
-       //now.addToImage({name:now.name,x:0,y:0});
-     });
 
-   var lp = "";  
-   $(r.node).mousemove(function(e){
-     if(draw){
-       var x = Math.floor(e.offsetX/now.GAMEUNIT);
-       var y = Math.floor(e.offsetY/now.GAMEUNIT);
-       var cp = x+","+y;
-       if (lp != cp){
-         console.log ("lp="+lp+"//cp="+cp);
-         lp = cp;
-         now.addToImage({name:now.name,x:x, y:y});
-       }
-       //image.push({x:e.offsetX, y:e.offsetY});
-       //console.log(image);
+  var lp = "";  
+  $(r.node).mousemove(function(e){
+   if(draw){
+     var x = Math.floor(e.offsetX/now.GAMEUNIT);
+     var y = Math.floor(e.offsetY/now.GAMEUNIT);
+     var cp = x+","+y;
+     if (lp != cp){
+       console.log ("lp="+lp+"//cp="+cp);
+       lp = cp;
+       now.addToImage({name:now.name,x:x, y:y});
      }
-   });
+     //image.push({x:e.offsetX, y:e.offsetY});
+     //console.log(image);
+   }
+  });
 }
 
 var colors = ["red", "blue", "green", "yellow"];
@@ -133,30 +133,29 @@ now.drawBoard = function(board){
   }
 }
 
-
- function drawing(varname){
-     var me = ArrayIndexOf(now.clients, function(obj){
-         return obj.name == varname;
-     });
-     if (now.clients[me].draw.length === 0) {
-       return;
-     }
-     //console.log("array is:");
-     //console.log(now.clients[me]);
-     //console.log(now.clients[me].draw);
-     var p = now.clients[me].draw.shift();
-     //console.log(p);
-     if(p.x == 0 && p.y == 0){
-       console.log("restart");
-       p = now.clients[me].draw.shift();
-       lastPoint = p;
-       path = paper.path("M"+(p.x-1)+" "+(p.y-1)+"L"+(p.x)+" "+(p.y));
-     }
-     else{
-       path = paper.path("M"+(lastPoint.x)+" "+(lastPoint.y)+"L"+(p.x)+" "+(p.y));
-       lastPoint = p;
-     }
- }
+function drawing(varname){
+   var me = ArrayIndexOf(now.clients, function(obj){
+       return obj.name == varname;
+   });
+   if (now.clients[me].draw.length === 0) {
+     return;
+   }
+   //console.log("array is:");
+   //console.log(now.clients[me]);
+   //console.log(now.clients[me].draw);
+   var p = now.clients[me].draw.shift();
+   //console.log(p);
+   if(p.x == 0 && p.y == 0){
+     console.log("restart");
+     p = now.clients[me].draw.shift();
+     lastPoint = p;
+     path = paper.path("M"+(p.x-1)+" "+(p.y-1)+"L"+(p.x)+" "+(p.y));
+   }
+   else{
+     path = paper.path("M"+(lastPoint.x)+" "+(lastPoint.y)+"L"+(p.x)+" "+(p.y));
+     lastPoint = p;
+   }
+}
  
 function ArrayIndexOf(a, fnc) {
     if (!fnc || typeof (fnc) != 'function') {

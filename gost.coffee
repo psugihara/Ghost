@@ -24,7 +24,7 @@ class Player
 class Game
   constructor: (@height, @width, @gameoverRatio) ->
     @gameoverRatio ?= .8 # min percent of board full before game is over
-    @board = ((EMPTY for numa in [1..width]) for num in [1..height])
+    @board = ((EMPTY for num in [1..width]) for num in [1..height])
     @players = []
 
   onBoard: (x, y) =>

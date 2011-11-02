@@ -69,20 +69,21 @@ class Game
     x = xy[0]
     y = xy[1]
     [
-      [x+1][y]
-      [x-1][y]
-      [x][y-1]
-      [x][y+1]
+      [x+1,y]
+      [x-1,y]
+      [x,y-1]
+      [x,y+1]
     ]
 
   # Param stones is an array of [x,y] arrays.
   placeStones: (player, stones) =>
     _.map stones, (s) => @board[s[0]][s[1]] = player.id
-    neighbors = _.union(_.map(stones, @neighbors))
+    neighbors = _.uniq [].concat(_.map(stones, @neighbors)...)
+    console.log neighbors
     emptyNeighbors = _.filter neighbors, (n) => @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
     didFlood = false
     for [x, y] in emptyNeighbors
-      flooded = floodFill x, y, player.id
+      flooded = @floodFill x, y, player.id
       emptyNeighbors = _.without emptyNeighbors flooded.toFlood
       if not didFlood and flooded.didFlood
         didFlood = true

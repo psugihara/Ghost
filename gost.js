@@ -130,21 +130,22 @@
       var x, y;
       x = xy[0];
       y = xy[1];
-      return [[x + 1][y], [x - 1][y], [x][y - 1], [x][y + 1]];
+      return [[x + 1, y], [x - 1, y], [x, y - 1], [x, y + 1]];
     };
     Game.prototype.placeStones = function(player, stones) {
-      var didFlood, emptyNeighbors, flooded, neighbors, x, y, _i, _len, _ref;
+      var didFlood, emptyNeighbors, flooded, neighbors, x, y, _i, _len, _ref, _ref2;
       _.map(stones, __bind(function(s) {
         return this.board[s[0]][s[1]] = player.id;
       }, this));
-      neighbors = _.union(_.map(stones, this.neighbors));
+      neighbors = _.uniq((_ref = []).concat.apply(_ref, _.map(stones, this.neighbors)));
+      console.log(neighbors);
       emptyNeighbors = _.filter(neighbors, __bind(function(n) {
         return (this.board[n[0]] != null) && this.board[n[0]][n[1]] === EMPTY;
       }, this));
       didFlood = false;
       for (_i = 0, _len = emptyNeighbors.length; _i < _len; _i++) {
-        _ref = emptyNeighbors[_i], x = _ref[0], y = _ref[1];
-        flooded = floodFill(x, y, player.id);
+        _ref2 = emptyNeighbors[_i], x = _ref2[0], y = _ref2[1];
+        flooded = this.floodFill(x, y, player.id);
         emptyNeighbors = _.without(emptyNeighbors(flooded.toFlood));
         if (!didFlood && flooded.didFlood) {
           didFlood = true;

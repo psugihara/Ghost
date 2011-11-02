@@ -29,7 +29,7 @@ everyone.now.GAMEHIGH = 30;
 var game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
 var peter = new g.Player('Peter', '33');
 var bill = new g.Player('Billy', '22');
-game.placeStones(peter, Array(Array(1,1),Array(2,2)));
+game.placeStones(peter, [[1,1],[2,2]]);
 g.printBoard(game)
 
 console.log(bill);

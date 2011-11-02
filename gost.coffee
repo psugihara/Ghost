@@ -24,7 +24,7 @@ class Player
 class Game
   constructor: (@height, @width, @gameoverRatio) ->
     @gameoverRatio ?= .8 # min percent of board full before game is over
-    @board = ((EMPTY for num in [1..width]) for num in [1..height])
+    @board = ((EMPTY for numa in [1..width]) for num in [1..height])
     @players = []
 
   onBoard: (x, y) =>
@@ -77,9 +77,9 @@ class Game
 
   # Param stones is an array of [x,y] arrays.
   placeStones: (player, stones) =>
-    _.map stones, (s) -> @board[s[0]][s[1]] = player.id
+    _.map stones, (s) => @board[s[0]][s[1]] = player.id
     neighbors = _.union(_.map(stones, @neighbors))
-    emptyNeighbors = _.filter neighbors, (n) -> @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
+    emptyNeighbors = _.filter neighbors, (n) => @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
     didFlood = false
     for [x, y] in emptyNeighbors
       flooded = floodFill x, y, player.id
@@ -87,7 +87,7 @@ class Game
       if not didFlood and flooded.didFlood
         didFlood = true
     if not didFlood # then unplace the stoens
-      _.map stones, (s) -> @board[s[0]][s[1]] = EMPTY
+      _.map stones, (s) => @board[s[0]][s[1]] = EMPTY
     didFlood
 
   addPlayer: (name, id) =>

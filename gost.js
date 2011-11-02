@@ -134,13 +134,13 @@
     };
     Game.prototype.placeStones = function(player, stones) {
       var didFlood, emptyNeighbors, flooded, neighbors, x, y, _i, _len, _ref;
-      _.map(stones, function(s) {
+      _.map(stones, __bind(function(s) {
         return this.board[s[0]][s[1]] = player.id;
-      });
+      }, this));
       neighbors = _.union(_.map(stones, this.neighbors));
-      emptyNeighbors = _.filter(neighbors, function(n) {
+      emptyNeighbors = _.filter(neighbors, __bind(function(n) {
         return (this.board[n[0]] != null) && this.board[n[0]][n[1]] === EMPTY;
-      });
+      }, this));
       didFlood = false;
       for (_i = 0, _len = emptyNeighbors.length; _i < _len; _i++) {
         _ref = emptyNeighbors[_i], x = _ref[0], y = _ref[1];
@@ -151,9 +151,9 @@
         }
       }
       if (!didFlood) {
-        _.map(stones, function(s) {
+        _.map(stones, __bind(function(s) {
           return this.board[s[0]][s[1]] = EMPTY;
-        });
+        }, this));
       }
       return didFlood;
     };

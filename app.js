@@ -29,8 +29,9 @@ everyone.now.GAMEHIGH = 30;
 var game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
 var peter = new g.Player('Peter', '33');
 var bill = new g.Player('Billy', '22');
-game.placeStones(peter, [[1,1],[2,2]]);
-g.printBoard(game)
+// STONES WILL ONLY BE PLACED IF THEY MAKE A CONNECTED SHAPE!
+game.placeStones(peter, [[1,1], [1,3], [2,2], [0,2]]);
+g.printBoard(game.board)
 
 console.log(bill);
 /*

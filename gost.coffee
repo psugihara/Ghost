@@ -32,62 +32,76 @@ class Game
 
   # Flood fill empty polygon containing (x,y) and surrounded by cells with the
   # replacement color.
+  # Return an array of the points that were flooded.
   floodFill: (x, y, replacement) =>
     # http://en.wikipedia.org/wiki/Flood_fill
-    toFlood = []
+    # Target color = EMPTY.
+    flooded = []
     q = []
-    return false if @board[x][y] != EMPTY
+    # If the space is already filled, return early.
+    return flooded if (not @board[x]?) or @board[x][y] != EMPTY
     q.push [x, y]
     while q.length > 0
-      n = w = e = q.pop()
+      n = w = e = q.pop() # n is the start point (node)
+      if @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
 
-      # Move w/e west/east until it is no longer at an empty space.
-      while @board[w[0]]? and @board[w[0]][w[1]] == EMPTY
-        w = [w[0] - 1, w[1]]
-      while @board[e[0]]? and @board[e[0]][e[1]] == EMPTY
-        e = [e[0] + 1, e[1]]
+        # Move w/e west/east until it is no longer at an empty space.
+        while @board[w[0]]? and @board[w[0]][w[1]] == EMPTY
+          w = [w[0] - 1, w[1]]
+        while @board[e[0]]? and @board[e[0]][e[1]] == EMPTY
+          e = [e[0] + 1, e[1]]
 
-      # Don't flood if the correct player isn't surrounding.
-      if shouldFlood and (not @board[w[0]]? or not @board[e[0]]? or @board[w[0]][w[1]] != replacement or @board[e[0]][e[1]] != replacement)
-        shouldFlood = false
+        # Flood points between w and e.
+        between = ([x, n[1]] for x in [w[0]+1..e[0]-1]) if not _.isEqual w, e
+        # Fill and continue on this path if w != e.
+        if between?
+          for xy in between
+            @board[xy[0]][xy[1]] = replacement
+          flooded = flooded.concat between
 
-      between = ([x, n[1]] for x in [w[0]+1..e[0]-1])
-      toFlood.concat between
+          # Add nodes north/south of nodes between n and w when they are of target color.
+          q = q.concat ([xy[0], xy[1]-1] for xy in between when @board[xy[0]]?[xy[1]-1] == EMPTY)
+          q = q.concat ([xy[0], xy[1]+1] for xy in between when @board[xy[0]]?[xy[1]+1] == EMPTY)
 
-      # Check/add nodes north/south of nodes between n and w.
-      q.concat (xy for xy in between when @board[x]? and @board[x][xy[1]-1] == EMPTY)
-      q.concat (xy for xy in between when @board[x]? and @board[x][xy[1]+1] == EMPTY)
-
-    if shouldFlood # then flood
-      for [x, y] in toFlood
-        @board[x][y] = replacement
-
-    'toFlood': toFlood
-    'didFlood': shouldFlood
+    flooded
 
   neighbors: (xy) ->
     x = xy[0]
     y = xy[1]
     [
-      [x+1,y]
-      [x-1,y]
-      [x,y-1]
-      [x,y+1]
+      [x + 1, y]
+      [x - 1, y]
+      [x, y - 1]
+      [x, y + 1]
     ]
+
+  setEmpty: (points) =>
+    for xy in points
+      @board[xy[0]][xy[1]] = EMPTY
 
   # Param stones is an array of [x,y] arrays.
   placeStones: (player, stones) =>
     _.map stones, (s) => @board[s[0]][s[1]] = player.id
-    neighbors = _.uniq [].concat(_.map(stones, @neighbors)...)
-    emptyNeighbors = _.filter neighbors, (n) => @board[n[0]]? and @board[n[0]][n[1]] == EMPTY
+    neighbors = [].concat(_.map(stones, @neighbors)...)
     didFlood = false
-    for [x, y] in emptyNeighbors
+    for [x, y] in neighbors
       flooded = @floodFill x, y, player.id
-      emptyNeighbors = _.without(emptyNeighbors, flooded.toFlood...)
-      if not didFlood and flooded.didFlood
+      # If any of the flooded points is touching the edge or another player's
+      # stones, then unflood.
+      for xy in flooded
+        if not xy?
+          continue
+        for n in @neighbors(xy)
+          if @board[n[0]]?[n[1]] != player.id
+            @setEmpty flooded
+            flooded = []
+      if flooded.length > 0
         didFlood = true
-    if not didFlood # then unplace the stoens
-      _.map stones, (s) => @board[s[0]][s[1]] = EMPTY
+
+      neighbors = _.without(neighbors, flooded...)
+    if not didFlood # then unplace the stones
+      @setEmpty stones
+
     didFlood
 
   addPlayer: (name, id) =>
@@ -101,13 +115,13 @@ class Game
   checkGameOver: =>
     _.without(_.flatten(@board), EMPTY).length < @height*@width*@gameoverRatio
 
-printBoard = (g) ->
+printBoard = (board) ->
   # FOR DEBUGGING  
   console.log '================================'
   s = ''
-  for colNum in [0..g.board[0].length-1]
+  for colNum in [0..board[0].length-1]
     s = ''
-    for row in g.board
+    for row in board
       s += row[colNum]
       s += ' '
     console.log s

@@ -39,6 +39,7 @@
       this.checkWinner = __bind(this.checkWinner, this);
       this.addPlayer = __bind(this.addPlayer, this);
       this.placeStones = __bind(this.placeStones, this);
+      this.setEmpty = __bind(this.setEmpty, this);
       this.floodFill = __bind(this.floodFill, this);
       this.onBoard = __bind(this.onBoard, this);
       if ((_ref = this.gameoverRatio) == null) {
@@ -65,66 +66,64 @@
       return x < this.width && x >= 0 && y < this.height && y >= 0;
     };
     Game.prototype.floodFill = function(x, y, replacement) {
-      var between, e, n, q, shouldFlood, toFlood, w, x, xy, _i, _len, _ref;
-      toFlood = [];
+      var between, e, flooded, n, q, w, x, xy, _i, _len;
+      flooded = [];
       q = [];
-      if (this.board[x][y] !== EMPTY) {
-        return false;
+      if ((!(this.board[x] != null)) || this.board[x][y] !== EMPTY) {
+        return flooded;
       }
       q.push([x, y]);
       while (q.length > 0) {
         n = w = e = q.pop();
-        while ((this.board[w[0]] != null) && this.board[w[0]][w[1]] === EMPTY) {
-          w = [w[0] - 1, w[1]];
-        }
-        while ((this.board[e[0]] != null) && this.board[e[0]][e[1]] === EMPTY) {
-          e = [e[0] + 1, e[1]];
-        }
-        if (shouldFlood && (!(this.board[w[0]] != null) || !(this.board[e[0]] != null) || this.board[w[0]][w[1]] !== replacement || this.board[e[0]][e[1]] !== replacement)) {
-          shouldFlood = false;
-        }
-        between = (function() {
-          var _ref, _ref2, _results;
-          _results = [];
-          for (x = _ref = w[0] + 1, _ref2 = e[0] - 1; _ref <= _ref2 ? x <= _ref2 : x >= _ref2; _ref <= _ref2 ? x++ : x--) {
-            _results.push([x, n[1]]);
+        if ((this.board[n[0]] != null) && this.board[n[0]][n[1]] === EMPTY) {
+          while ((this.board[w[0]] != null) && this.board[w[0]][w[1]] === EMPTY) {
+            w = [w[0] - 1, w[1]];
           }
-          return _results;
-        })();
-        toFlood.concat(between);
-        q.concat((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = between.length; _i < _len; _i++) {
-            xy = between[_i];
-            if ((this.board[x] != null) && this.board[x][xy[1] - 1] === EMPTY) {
-              _results.push(xy);
+          while ((this.board[e[0]] != null) && this.board[e[0]][e[1]] === EMPTY) {
+            e = [e[0] + 1, e[1]];
+          }
+          if (!_.isEqual(w, e)) {
+            between = (function() {
+              var _ref, _ref2, _results;
+              _results = [];
+              for (x = _ref = w[0] + 1, _ref2 = e[0] - 1; _ref <= _ref2 ? x <= _ref2 : x >= _ref2; _ref <= _ref2 ? x++ : x--) {
+                _results.push([x, n[1]]);
+              }
+              return _results;
+            })();
+          }
+          if (between != null) {
+            for (_i = 0, _len = between.length; _i < _len; _i++) {
+              xy = between[_i];
+              this.board[xy[0]][xy[1]] = replacement;
             }
+            flooded = flooded.concat(between);
+            q = q.concat((function() {
+              var _j, _len2, _ref, _results;
+              _results = [];
+              for (_j = 0, _len2 = between.length; _j < _len2; _j++) {
+                xy = between[_j];
+                if (((_ref = this.board[xy[0]]) != null ? _ref[xy[1] - 1] : void 0) === EMPTY) {
+                  _results.push([xy[0], xy[1] - 1]);
+                }
+              }
+              return _results;
+            }).call(this));
+            q = q.concat((function() {
+              var _j, _len2, _ref, _results;
+              _results = [];
+              for (_j = 0, _len2 = between.length; _j < _len2; _j++) {
+                xy = between[_j];
+                if (((_ref = this.board[xy[0]]) != null ? _ref[xy[1] + 1] : void 0) === EMPTY) {
+                  _results.push([xy[0], xy[1] + 1]);
+                }
+              }
+              return _results;
+            }).call(this));
           }
-          return _results;
-        }).call(this));
-        q.concat((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = between.length; _i < _len; _i++) {
-            xy = between[_i];
-            if ((this.board[x] != null) && this.board[x][xy[1] + 1] === EMPTY) {
-              _results.push(xy);
-            }
-          }
-          return _results;
-        }).call(this));
-      }
-      if (shouldFlood) {
-        for (_i = 0, _len = toFlood.length; _i < _len; _i++) {
-          _ref = toFlood[_i], x = _ref[0], y = _ref[1];
-          this.board[x][y] = replacement;
         }
       }
-      return {
-        'toFlood': toFlood,
-        'didFlood': shouldFlood
-      };
+      return flooded;
     };
     Game.prototype.neighbors = function(xy) {
       var x, y;
@@ -132,28 +131,46 @@
       y = xy[1];
       return [[x + 1, y], [x - 1, y], [x, y - 1], [x, y + 1]];
     };
+    Game.prototype.setEmpty = function(points) {
+      var xy, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = points.length; _i < _len; _i++) {
+        xy = points[_i];
+        _results.push(this.board[xy[0]][xy[1]] = EMPTY);
+      }
+      return _results;
+    };
     Game.prototype.placeStones = function(player, stones) {
-      var didFlood, emptyNeighbors, flooded, neighbors, x, y, _i, _len, _ref, _ref2;
+      var didFlood, flooded, n, neighbors, x, xy, y, _i, _j, _k, _len, _len2, _len3, _ref, _ref2, _ref3, _ref4;
       _.map(stones, __bind(function(s) {
         return this.board[s[0]][s[1]] = player.id;
       }, this));
-      neighbors = _.uniq((_ref = []).concat.apply(_ref, _.map(stones, this.neighbors)));
-      emptyNeighbors = _.filter(neighbors, __bind(function(n) {
-        return (this.board[n[0]] != null) && this.board[n[0]][n[1]] === EMPTY;
-      }, this));
+      neighbors = (_ref = []).concat.apply(_ref, _.map(stones, this.neighbors));
       didFlood = false;
-      for (_i = 0, _len = emptyNeighbors.length; _i < _len; _i++) {
-        _ref2 = emptyNeighbors[_i], x = _ref2[0], y = _ref2[1];
+      for (_i = 0, _len = neighbors.length; _i < _len; _i++) {
+        _ref2 = neighbors[_i], x = _ref2[0], y = _ref2[1];
         flooded = this.floodFill(x, y, player.id);
-        emptyNeighbors = _.without.apply(_, [emptyNeighbors].concat(__slice.call(flooded.toFlood)));
-        if (!didFlood && flooded.didFlood) {
+        for (_j = 0, _len2 = flooded.length; _j < _len2; _j++) {
+          xy = flooded[_j];
+          if (!(xy != null)) {
+            continue;
+          }
+          _ref3 = this.neighbors(xy);
+          for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
+            n = _ref3[_k];
+            if (((_ref4 = this.board[n[0]]) != null ? _ref4[n[1]] : void 0) !== player.id) {
+              this.setEmpty(flooded);
+              flooded = [];
+            }
+          }
+        }
+        if (flooded.length > 0) {
           didFlood = true;
         }
+        neighbors = _.without.apply(_, [neighbors].concat(__slice.call(flooded)));
       }
       if (!didFlood) {
-        _.map(stones, __bind(function(s) {
-          return this.board[s[0]][s[1]] = EMPTY;
-        }, this));
+        this.setEmpty(stones);
       }
       return didFlood;
     };
@@ -173,15 +190,14 @@
     };
     return Game;
   })();
-  printBoard = function(g) {
-    var colNum, row, s, _i, _len, _ref, _ref2;
+  printBoard = function(board) {
+    var colNum, row, s, _i, _len, _ref;
     console.log('================================');
     s = '';
-    for (colNum = 0, _ref = g.board[0].length - 1; 0 <= _ref ? colNum <= _ref : colNum >= _ref; 0 <= _ref ? colNum++ : colNum--) {
+    for (colNum = 0, _ref = board[0].length - 1; 0 <= _ref ? colNum <= _ref : colNum >= _ref; 0 <= _ref ? colNum++ : colNum--) {
       s = '';
-      _ref2 = g.board;
-      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-        row = _ref2[_i];
+      for (_i = 0, _len = board.length; _i < _len; _i++) {
+        row = board[_i];
         s += row[colNum];
         s += ' ';
       }

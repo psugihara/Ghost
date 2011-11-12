@@ -1,5 +1,18 @@
+.player_0{
+	background:blue;
+}
+.player_1{
+	background:red;
+}
+.player_2{
+	background:green;
+}
+.player_3{
+	background:yellow;
+}
+
 body {
-  background: #f5f5f5;
+  background: #A0A0A0;
   cursor: crosshair;
 }
 #messages{
@@ -18,7 +31,7 @@ body {
   height:auto;
 }
 canvas#board {
-  background: #fff;
+  //background: #fff;
   cursor: crosshair;
   border: 1px solid #ccc;
   border-radius: 10px;

@@ -34,65 +34,66 @@ everyone.now.GAMEUNIT = 20;
 everyone.now.GAMEWIDE = 30;
 everyone.now.GAMEHIGH = 30;
 
-// This is how you use the game...
-var game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
-var peter = new g.Player('Peter', '00');
-var bill = new g.Player('Billy', '11');
-// STONES WILL ONLY BE PLACED IF THEY MAKE A CONNECTED SHAPE!
-game.placeStones(peter, [[1,1], [1,3], [2,2], [0,2]]);
-g.printBoard(game.board)
-everyone.now.stableBoard = (game.board);
-everyone.now.clients = [];
+var game;
+var globalStart = false;
 
-everyone.now.distribute_draw = function(x,y){
-  everyone.now.receive_draw(x, y);
+nowjs.on("connect", function() {
+   //	if(globalStart){console.log("tried to re-establish!!!!!!!!!!"); return;}else{console.log("FIRST JOIN");globalStart = true;}
+
+ 	game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
+
+
+	var player0 = new g.Player('Player One', '0');
+	var player1 = new g.Player('Player Two', '1');
+	var player2 = new g.Player('Player Three', '2');
+	var player3 = new g.Player('Player Four', '3');
+
+	// STONES WILL ONLY BE PLACED IF THEY MAKE A CONNECTED SHAPE!
+	//game.placeStones(peter, [[1,1], [1,3], [2,2], [0,2]]);
+	g.printBoard(game.board)
+	everyone.now.stableBoard = (game.board);
+	everyone.now.players = [player0, player1, player2, player3];
+	everyone.now.statuses = [-1,-1,-1,-1];
+	this.now.firstStart();
+});
+
+everyone.now.setStatus = function(index,value){
+	console.log("change pos "+index+" to "+value);
+	everyone.now.statuses[index] = value;
+	everyone.now.updateButtons();
 }
+
 
 everyone.now.addToBoard = function(cObj){ 
   console.log(cObj);
-  var name = cObj.name;
+  var pos = cObj.pos;
   var array = cObj.moveArray;
-  game.placeStones(peter, array);
-  g.printBoard(game.board);
+  game.placeStones(everyone.now.players[pos], array);
+  //g.printBoard(game.board);
   everyone.now.stableBoard = game.board;
+	everyone.now.eraseTemp(array);
   everyone.now.drawBoard(game.board);
-}
-
-everyone.now.setName = function(name){
-  console.log(name);
-  var pos = ArrayIndexOf(everyone.now.clients, function(obj){
-    return obj.name == name;
-  });
-  
-  if (pos > -1) {
-    this.now.askName("name is taken");
-  } else {
-    this.now.drawBoard(game.board);
-    console.log("Joined: " + name);
-  }
 }
 
 nowjs.on("connect", function() {
 }); 
 
 nowjs.on("disconnect", function() {
-  var left = this.now.name;
-  var pos = ArrayIndexOf(everyone.now.clients, function(obj){
-    return obj.name == left;
-  })
-  if (pos >= 0) {
-    everyone.now.clients.splice(pos,1);
-  }
- console.log("Left: " + this.now.name);
- everyone.now.updateList();
+	if(this.now.myP >-1){
+		everyone.now.setStatus(this.now.myP, "-1");
+	}
+ 	console.log("Left: " + this.now.name);
+ 	//everyone.now.updateList();
 });
 
 
 everyone.now.clearBoard = function(){
+	/*
   game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
   peter = new g.Player('Peter', '33');
   bill = new g.Player('Billy', '22');
   everyone.now.drawBoard("clear");
+*/
 }
 
 function ArrayIndexOf(a, fnc) {

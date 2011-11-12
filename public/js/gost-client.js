@@ -34,15 +34,15 @@ function play(url) {
   var sound = new Audio(url);
   sound.play();
 }
-now.updateButtons = function(){
+now.updateButtons = function() {
 	//console.log(now.statuses);
 	$("#players").empty();	
-	$.each(now.statuses, function(index, value){
+	$.each(now.statuses, function(index, value) {
 		//values keep changing between -1, undefined and null for some reason
 		value = value == undefined || value == -1 || value == null ? "X" : "O";
-		var butt = $("<button class='player_"+index+"'>"+value+"</button>").click(function(){
-			if(now.statuses[index] == -1||now.statuses[index]==undefined||now.statuses[index]==null){
-				if(now.myP != -1){
+		var butt = $("<button class='player_"+index+"'>"+value+"</button>").click(function() {
+			if(now.statuses[index] == -1||now.statuses[index]==undefined||now.statuses[index]==null) {
+				if(now.myP != -1) {
 					var foo = now.myP;
 					now.setStatus(foo, -1);
 				}
@@ -56,10 +56,10 @@ now.updateButtons = function(){
 
 
 
-now.firstStart = function(){
+now.firstStart = function() {
 	 play(welcome);
 
-	if(started){
+	if(started) {
 		// console.log("tried to reconnect?????????!!!!!!!!!!"); 
 		return;
 	}
@@ -71,19 +71,19 @@ now.firstStart = function(){
   	setUp();
 }
 
-function setBoard(){
+function setBoard() {
   width = now.GAMEWIDE*now.GAMEUNIT;
   height = now.GAMEHIGH*now.GAMEUNIT;
   paper = Raphael(200,50,width,height);
   r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke-width", "0");
 }
 
-function setUp(){
+function setUp() {
   setBoard();
-  $(window).mousedown(function(){
+  $(window).mousedown(function() {
      draw = true;
   });
-  $(window).mouseup(function(){
+  $(window).mouseup(function() {
      draw = false;
 	now.addToBoard({pos:now.myP,moveArray:now.currentDrawing});
      //now.eraseTemp(now.currentDrawing);
@@ -91,25 +91,25 @@ function setUp(){
    });
 
   	var lp = "";  
-  	$(window).mousemove(function(e){
-		if(draw && now.myP >= 0){
-		//if(draw){
+  	$(window).mousemove(function(e) {
+		if(draw && now.myP >= 0) {
+		//if(draw) {
 			// console.log($(e.target).children());
 			var x = Math.floor(e.offsetX/now.GAMEUNIT);
 			var y = Math.floor(e.offsetY/now.GAMEUNIT);
 			var good = "SVGRectElement";
 			var cp = x+","+y;
-			if (lp != cp){
+			if (lp != cp) {
 				        play(place);
 
 				lp = cp;
 				var repeat = false;
 				// console.log("x="+x+", y="+y);
 				repeat = ($(e.target).children().length>0 || x>=now.GAMEWIDE || x< 0 || y>=now.GAMEHIGH || y<0) ? true : false;
-				jQuery.each(now.currentDrawing, function(index, value){
+				jQuery.each(now.currentDrawing, function(index, value) {
 					//console.log("xy = "+x+","+y);
 					//console.log("CDxy = "+value[0]+","+value[1]);
-					if(!repeat){
+					if(!repeat) {
 						repeat = ((value[0] == x && value[1] == y) || inStableBoard([x,y])) ? true : false;
 					}
 					else{
@@ -117,7 +117,7 @@ function setUp(){
 					}
 				});
 				//console.log(repeat);
-				if(repeat){
+				if(repeat) {
 					draw=false;
 					// console.log("closed drawing");
 					now.addToBoard({pos:now.myP,moveArray:now.currentDrawing});
@@ -131,30 +131,30 @@ function setUp(){
 		}
   	});
 }
-tempDraw = function(array){
+
+function tempDraw (array) {
     var x = array[0]*now.GAMEUNIT;
     var y = array[1]*now.GAMEUNIT;
     paper.rect(x,y,now.GAMEUNIT,now.GAMEUNIT).attr("stroke-width",0).attr("fill",colors[now.myP]);
 }
-now.eraseTemp = function(temps){
+
+now.eraseTemp = function(temps) {
    //console.log(temps);
-   for(x in temps){
-      if(jQuery.isArray(temps[x])){
+   for(x in temps) {
+      if(jQuery.isArray(temps[x])) {
             paper.rect((temps[x][0]*now.GAMEUNIT),(temps[x][1]*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("fill","white").attr("stroke",0);   
       }
     }  
 	return;
 }
 
-function inStableBoard(coords){		
+function inStableBoard(coords) {		
 	return (now.stableBoard[coords[0]][coords[1]] != -1)
 }
 
 now.drawBoard = function(board) {
   play(fail);
-  var filler;
-  console.log(board);
-  console.log("drawBoard called");
+  var filler, player;
   for (x in board) {
     for (y in board[x]) {
       player = board[x][y];

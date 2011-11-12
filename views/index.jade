@@ -9,6 +9,11 @@ input(type='button', value='Send', id='send-button')
   canvas#board(width='900', height='600')
   ul#players
 
+audio#welcome(src='audio/Fox Lazer.wav', preload='auto')
+audio#place(src='audio/Grab Item.wav', preload='auto')
+audio#fail(src='audio/Kirby Lose Power.wav', preload='auto')
+audio#success(src='audio/Successful.wav', preload='auto')
+
 script(src='http://cdnjs.cloudflare.com/ajax/libs/jquery/1.6.4/jquery.min.js')
 script(src='js/raphael-min.js')
 script(src='nowjs/now.js')

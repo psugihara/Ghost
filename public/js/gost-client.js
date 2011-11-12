@@ -44,7 +44,7 @@ function start() {
     now.currentDrawing = [];
   });
 
-  var lp = "";  
+  var lp = ""; // last position
   $(window).mousemove(function(e) {
     if (draw) {
       var x = Math.floor(e.offsetX/now.GAMEUNIT);

@@ -23,6 +23,10 @@ app.configure('production', function(){
 });
 
 app.get('/', function(req, res){
+  res.redirect('/default');
+});
+
+app.get('/:room', function(req, res){
   res.render('index.jade', {title: 'gost'});
 });
 
@@ -34,51 +38,51 @@ everyone.now.GAMEUNIT = 20;
 everyone.now.GAMEWIDE = 30;
 everyone.now.GAMEHIGH = 30;
 
-var game;
-var globalStart = false;
+// var globalStart = false;
 
 nowjs.on("connect", function() {
    //	if(globalStart){console.log("tried to re-establish!!!!!!!!!!"); return;}else{console.log("FIRST JOIN");globalStart = true;}
-
- 	game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
-
-
-	var player0 = new g.Player('Player One', '0');
-	var player1 = new g.Player('Player Two', '1');
-	var player2 = new g.Player('Player Three', '2');
-	var player3 = new g.Player('Player Four', '3');
-
-	// STONES WILL ONLY BE PLACED IF THEY MAKE A CONNECTED SHAPE!
-	//game.placeStones(peter, [[1,1], [1,3], [2,2], [0,2]]);
-	g.printBoard(game.board)
-	everyone.now.stableBoard = (game.board);
-	everyone.now.players = [player0, player1, player2, player3];
-	everyone.now.statuses = [-1,-1,-1,-1];
-	this.now.firstStart();
+  //	If the client's requested game room does not exist, create it.
+  var group = nowjs.getGroup(this.now.group);
+  console.log(this.now.group);
+  console.log("hey");
+  if (!group.game) {
+    group.game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
+    group.now.statuses = [-1,-1,-1,-1];
+  }
+  group.addUser(this.user.clientId);
+  this.user.player = new g.Player('Name', -1); // The player starts unactivated until he updates his status.
+  group.game.addPlayer(this.user.player);
+	group.now.stableBoard = group.game.board;
+  group.now.drawBoard(group.game.board);
+  this.now.firstStart();
 });
 
 everyone.now.setStatus = function(index,value){
-	console.log("change pos "+index+" to "+value);
-	everyone.now.statuses[index] = value;
-	everyone.now.updateButtons();
+	// console.log("change pos "+index+" to "+value);
+  this.user.player.id = index;
+  var group = nowjs.getGroup(this.now.group); 
+	group.now.statuses[index] = value;
+	group.now.updateButtons();
 }
 
-
 everyone.now.addToBoard = function(cObj){ 
-  console.log(cObj);
+  // console.log(cObj);
   var pos = cObj.pos;
   var array = cObj.moveArray;
-  game.placeStones(everyone.now.players[pos], array);
+  var group = nowjs.getGroup(this.now.group);
+  group.game.placeStones(this.user.player, array);
   //g.printBoard(game.board);
-  everyone.now.stableBoard = game.board;
-	everyone.now.eraseTemp(array);
-  everyone.now.drawBoard(game.board);
+  group.now.stableBoard = group.game.board;
+	group.now.eraseTemp(array);
+  group.now.drawBoard(group.game.board);
 }
 
 everyone.now.clearBoard = function(){
-  game.clearBoard();
-  everyone.now.stableBoard = game.board;
-  everyone.now.drawBoard(game.board);
+  var group = nowjs.getGroup(this.now.group);
+  group.game.clearBoard();
+  group.now.stableBoard = group.game.board;
+  group.now.drawBoard(group.game.board);
 }
 
 nowjs.on("connect", function() {
@@ -88,7 +92,7 @@ nowjs.on("disconnect", function() {
 	if (this.now.myP >-1) {
 		everyone.now.setStatus(this.now.myP, "-1");
 	}
- 	console.log("Left: " + this.now.name);
+   // console.log("Left: " + this.now.name);
  	//everyone.now.updateList();
 });
 

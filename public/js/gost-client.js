@@ -14,6 +14,8 @@ now.updateList = function() {
 }  
 
 now.currentDrawing = [];
+now.lastStableBoard = [];
+now.group = window.location.href.split("/")[3];
 
 var paper;
 var lastPoint = "";
@@ -21,19 +23,21 @@ var image = [];
 var draw = false;
 var r;
 var started = false;
-now.lastStableBoard = [];
 var blankColor = "white";
 var colors = ["blue","red","green", "yellow"];
+
 // Prebuffered audio resources
 var welcome = $("audio#welcome").attr("src");
 var place = $("audio#place").attr("src");
 var fail = $("audio#fail").attr("src");
 var success = $("audio#success").attr("src");
+
 // Play the audio file at the given url.
 function play(url) {
   var sound = new Audio(url);
   sound.play();
 }
+
 now.updateButtons = function() {
 	//console.log(now.statuses);
 	$("#players").empty();	
@@ -41,8 +45,8 @@ now.updateButtons = function() {
 		//values keep changing between -1, undefined and null for some reason
 		value = value == undefined || value == -1 || value == null ? "X" : "O";
 		var butt = $("<button class='player_"+index+"'>"+value+"</button>").click(function() {
-			if(now.statuses[index] == -1||now.statuses[index]==undefined||now.statuses[index]==null) {
-				if(now.myP != -1) {
+			if (now.statuses[index] == -1||now.statuses[index]==undefined||now.statuses[index]==null) {
+				if (now.myP != -1) {
 					var foo = now.myP;
 					now.setStatus(foo, -1);
 				}
@@ -54,21 +58,18 @@ now.updateButtons = function() {
 	});
 }
 
-
-
 now.firstStart = function() {
-	 play(welcome);
-
-	if(started) {
+	play(welcome);
+	if (started) {
 		// console.log("tried to reconnect?????????!!!!!!!!!!"); 
 		return;
-	}
-	else{
+	} 
+  else {
 		started = true;
 	}
 	now.updateButtons();
 	now.myP = -1;	
-  	setUp();
+  setUp();
 }
 
 function setBoard() {

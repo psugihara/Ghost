@@ -85,7 +85,8 @@ function setUp(){
   });
   $(window).mouseup(function(){
      draw = false;
-     now.eraseTemp(now.currentDrawing);
+	now.addToBoard({pos:now.myP,moveArray:now.currentDrawing});
+     //now.eraseTemp(now.currentDrawing);
      now.currentDrawing = [];
    });
 
@@ -153,6 +154,7 @@ function inStableBoard(coords){
 
 
 now.drawBoard = function(board) {
+play(fail);
   var filler;
   //console.log(board);
   console.log("drawBoard called");

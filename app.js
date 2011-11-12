@@ -1,19 +1,29 @@
-var fs = require('fs')
-  , $ = require('jquery')
+var $ = require('jquery')
   , express = require('express')
   , nowjs = require("now")
   , g = require("./gost");
 
 var app = express.createServer();
 
-app.use(express.static(__dirname + '/public/'));
+app.configure(function(){
+  app.use(express.methodOverride());
+  app.use(express.bodyParser());
+  app.use(app.router);
+});
+
+app.configure('development', function(){
+  app.use(express.static(__dirname + '/public'));
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('production', function(){
+  var oneYear = 31557600000;
+  app.use(express.static(__dirname + '/public', { maxAge: oneYear }));
+  app.use(express.errorHandler());
+});
 
 app.get('/', function(req, res){
-  fs.readFile(__dirname+'/templates/index2.html', function(err, data){
-    res.writeHead(200, {'Content-Type':'text/html'});
-    res.write(data);
-    res.end();
-  });
+  res.render('index.jade', {title: 'gost'});
 });
 
 app.listen(8080);

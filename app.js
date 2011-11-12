@@ -75,26 +75,22 @@ everyone.now.addToBoard = function(cObj){
   everyone.now.drawBoard(game.board);
 }
 
+everyone.now.clearBoard = function(){
+  game.clearBoard();
+  everyone.now.stableBoard = game.board;
+  everyone.now.drawBoard(game.board);
+}
+
 nowjs.on("connect", function() {
 }); 
 
 nowjs.on("disconnect", function() {
-	if(this.now.myP >-1){
+	if (this.now.myP >-1) {
 		everyone.now.setStatus(this.now.myP, "-1");
 	}
  	console.log("Left: " + this.now.name);
  	//everyone.now.updateList();
 });
-
-
-everyone.now.clearBoard = function(){
-	/*
-  game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
-  peter = new g.Player('Peter', '33');
-  bill = new g.Player('Billy', '22');
-  everyone.now.drawBoard("clear");
-*/
-}
 
 function ArrayIndexOf(a, fnc) {
   if (!fnc || typeof (fnc) != 'function') {

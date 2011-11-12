@@ -115,6 +115,9 @@ class Game
   checkGameOver: =>
     _.without(_.flatten(@board), EMPTY).length < @height*@width*@gameoverRatio
 
+  clearBoard: =>
+    @board = ((EMPTY for numa in [1..@width]) for num in [1..@height])
+
 printBoard = (board) ->
   # FOR DEBUGGING  
   console.log '================================'

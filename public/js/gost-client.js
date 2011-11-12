@@ -22,7 +22,8 @@ var draw = false;
 var r;
 var started = false;
 now.lastStableBoard = [];
-colors = ["blue","red","green", "yellow"];
+var blankColor = "white";
+var colors = ["blue","red","green", "yellow"];
 // Prebuffered audio resources
 var welcome = $("audio#welcome").attr("src");
 var place = $("audio#place").attr("src");
@@ -59,7 +60,7 @@ now.firstStart = function(){
 	 play(welcome);
 
 	if(started){
-		console.log("tried to reconnect?????????!!!!!!!!!!"); 
+		// console.log("tried to reconnect?????????!!!!!!!!!!"); 
 		return;
 	}
 	else{
@@ -77,7 +78,6 @@ function setBoard(){
   r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke-width", "0");
 }
 
-
 function setUp(){
   setBoard();
   $(window).mousedown(function(){
@@ -94,7 +94,7 @@ function setUp(){
   	$(window).mousemove(function(e){
 		if(draw && now.myP >= 0){
 		//if(draw){
-			console.log($(e.target).children());
+			// console.log($(e.target).children());
 			var x = Math.floor(e.offsetX/now.GAMEUNIT);
 			var y = Math.floor(e.offsetY/now.GAMEUNIT);
 			var good = "SVGRectElement";
@@ -104,7 +104,7 @@ function setUp(){
 
 				lp = cp;
 				var repeat = false;
-				console.log("x="+x+", y="+y);
+				// console.log("x="+x+", y="+y);
 				repeat = ($(e.target).children().length>0 || x>=now.GAMEWIDE || x< 0 || y>=now.GAMEHIGH || y<0) ? true : false;
 				jQuery.each(now.currentDrawing, function(index, value){
 					//console.log("xy = "+x+","+y);
@@ -119,7 +119,7 @@ function setUp(){
 				//console.log(repeat);
 				if(repeat){
 					draw=false;
-					console.log("closed drawing");
+					// console.log("closed drawing");
 					now.addToBoard({pos:now.myP,moveArray:now.currentDrawing});
 					now.currentDrawing = [];
 				}
@@ -150,46 +150,23 @@ function inStableBoard(coords){
 	return (now.stableBoard[coords[0]][coords[1]] != -1)
 }
 
-
-
-
 now.drawBoard = function(board) {
-play(fail);
+  play(fail);
   var filler;
-  //console.log(board);
+  console.log(board);
   console.log("drawBoard called");
-  if (board == "clear") {
-	/*
-	now.lastStableBoard = [];
-    for (i= 0;i<now.GAMEWIDE;i++) {
-      now.lastStableBoard[i] = [];
-      for (var j = 0; j < now.GAMEHIGH; j++) {
-        now.lastStableBoard[i][j] = -1;
+  for (x in board) {
+    for (y in board[x]) {
+      player = board[x][y];
+      filler = player == -1 ? blankColor : colors[player];
+      if (!$.isArray(now.lastStableBoard[x])) {
+        paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("stroke-width",0).attr("fill",filler);
+      } else if (player != now.lastStableBoard[x][y] ) {
+        paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("stroke-width",0).attr("fill",filler);
       }
     }
-    paper.clear();
-    width = now.GAMEWIDE*now.GAMEUNIT;
-    height = now.GAMEHIGH*now.GAMEUNIT;
-    paper = Raphael(200,50,width,height);
-    r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke", "blue");
-    now.drawBoard(now.stableBoard);
-	*/
-  } else {
-    for (x in board) {
-      for (y in board[x]) {
-        filler = colors[board[x][y]];
-        if (!$.isArray(now.lastStableBoard[x])) {
-			paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("stroke-width",0).attr("fill",filler);
-        } else {
-          if (board[x][y] != now.lastStableBoard[x][y] ) {
-			paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("stroke-width",0).attr("fill",filler);
-          }
-        }
-      }
-    } 
-    now.lastStableBoard = board;   
-  }
-
+  } 
+  now.lastStableBoard = board;
 }
 
 

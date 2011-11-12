@@ -35,6 +35,7 @@
       this.height = height;
       this.width = width;
       this.gameoverRatio = gameoverRatio;
+      this.clearBoard = __bind(this.clearBoard, this);
       this.checkGameOver = __bind(this.checkGameOver, this);
       this.checkWinner = __bind(this.checkWinner, this);
       this.addPlayer = __bind(this.addPlayer, this);
@@ -187,6 +188,24 @@
     };
     Game.prototype.checkGameOver = function() {
       return _.without(_.flatten(this.board), EMPTY).length < this.height * this.width * this.gameoverRatio;
+    };
+    Game.prototype.clearBoard = function() {
+      var num, numa;
+      return this.board = (function() {
+        var _ref, _results;
+        _results = [];
+        for (num = 1, _ref = this.height; 1 <= _ref ? num <= _ref : num >= _ref; 1 <= _ref ? num++ : num--) {
+          _results.push((function() {
+            var _ref2, _results2;
+            _results2 = [];
+            for (numa = 1, _ref2 = this.width; 1 <= _ref2 ? numa <= _ref2 : numa >= _ref2; 1 <= _ref2 ? numa++ : numa--) {
+              _results2.push(EMPTY);
+            }
+            return _results2;
+          }).call(this));
+        }
+        return _results;
+      }).call(this);
     };
     return Game;
   })();

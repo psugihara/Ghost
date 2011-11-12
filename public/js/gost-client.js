@@ -1,43 +1,24 @@
-now.clients = [];
-now.runningTimers = [];
+
+
+
+
 
 $(document).ready(function(){
-  now.receiveMessage = function(name, message){
-    $("#messages").append("<br>" + name + ": " + message);
-  }
-  
-  $("#send-button").click(function(){
-    now.distributeMessage($("#text-input").val());
-    $("#text-input").val("");
-  });
   $("#clear-button").click(function(){
     now.clearBoard();
   });
-  
-  now.updateList = function(){
-    setTimeout(function(){
+});  
+now.updateList = function(){
       var list = "LIST:<br>";
-      console.log(now.clients);
-      console.log(now.name);
       for (var i in now.clients) {
         list += now.clients[i].name+"<br>";
-        var nm = now.clients[i].name
-        if ($.inArray(nm, now.runningTimers)){
-          now.runningTimers.push(nm);
-          console.log("new timer");
-          //setInterval(function(){drawing(nm);}, 100);  
-        } 
       }
-      /*
-      $.each(now.clients, function(index, value){
-        list += value+"<br>";
-      });
-      */
       $("#list").html(list);
-    }, 1500);
-  }
-});
-
+ }
+  
+  
+now.currentDrawing = [];
+ 
 var paper;
 var lastPoint = "";
 var image = [];
@@ -58,104 +39,119 @@ now.ready(function(){
 
 function start(){
   
-  //nameTaken = now.ArrayIndexOf(now.clients, prompt("name?")) == -1 ? false : true;
-  
   width = now.GAMEWIDE*now.GAMEUNIT;
   height = now.GAMEHIGH*now.GAMEUNIT;
   paper = Raphael(200,50,width,height);
   r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke", "blue");
-  var path = paper.path();
+
   $(window).mousedown(function(){
      draw = true;
      //console.log(draw);
   });
   $(window).mouseup(function(){
      draw = false;
-     //now.addToImage({name:now.name,x:0,y:0});
+     now.eraseTemp(now.currentDrawing);
+     now.currentDrawing = [];
    });
 
   var lp = "";  
-  $(r.node).mousemove(function(e){
+  $(window).mousemove(function(e){
    if(draw){
      var x = Math.floor(e.offsetX/now.GAMEUNIT);
      var y = Math.floor(e.offsetY/now.GAMEUNIT);
+
      var cp = x+","+y;
      if (lp != cp){
-       console.log ("lp="+lp+"//cp="+cp);
        lp = cp;
-       now.addToImage({name:now.name,x:x, y:y});
+var repeat = false;
+
+jQuery.each(now.currentDrawing, function(index, value){
+	//	console.log("xy = "+x+","+y);
+//	console.log("CDxy = "+value[0]+","+value[1]);
+	if(!repeat){
+		repeat = value[0] == x && value[1] == y ? true : false;
+	}
+});
+     //  console.log(repeat);
+
+       if(repeat){
+            console.log("closed drawing");
+            now.addToBoard({name:now.name,moveArray:now.currentDrawing});
+           // now.clearTemp(now.currentDrawing);
+            now.currentDrawing = [];
+       }
+       else{
+           now.currentDrawing.push([x,y]);
+           tempDraw([x,y]);
+       }
      }
-     //image.push({x:e.offsetX, y:e.offsetY});
-     //console.log(image);
+
    }
   });
 }
-
-var colors = ["red", "blue", "green", "yellow"];
-
-now.addToBoard = function(obj){
-  var name = obj.name,
-  x = obj.x*now.GAMEUNIT,
-  y = obj.y*now.GAMEUNIT;
-  paper.rect(x,y,now.GAMEUNIT,now.GAMEUNIT);
+tempDraw = function(array){
+    var x = array[0]*now.GAMEUNIT;
+    var y = array[1]*now.GAMEUNIT;
+    paper.rect(x,y,now.GAMEUNIT,now.GAMEUNIT).attr("fill","blue");;
+    
+}
+now.eraseTemp = function(temps){
+    //console.log(temps);
+   for(x in temps){
+      if(jQuery.isArray(temps[x])){
+  
+            paper.rect((temps[x][0]*now.GAMEUNIT),(temps[x][1]*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("fill","white");
+        
+      }
+    }  
 }
 
+now.lastStableBoard = [];
+
+colors = ["red","blue","green"];
 
 
 now.drawBoard = function(board){
+	
+	var filler;
+ //   console.log(board);
   console.log("drawBoard called");
-  if(board == "clear"){
-    now.oldBoard = [];
-    for(i= 0;i<now.GAMEWIDE;i++){
-      now.oldBoard[i] = [];
-      for(var j = 0; j < now.GAMEHIGH; j++){
-        now.oldBoard[i][j] = -1;
-      }
-    }
-   // console.log("new old board");
-   // console.log(now.oldBoard);
-    paper.clear();
-    start();
-  }
-  else{
-    for(x in board){
-      if(jQuery.isArray(board[x])){
-        for(y in board[x]){
-          //console.log(board[x][y])
-          if(board[x][y] != now.oldBoard[x][y]){
-            paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("fill","red");
-          }
-        }
-      }
-    }
-    now.oldBoard = board;
-    
-  }
+  	if(board == "clear"){
+	    now.lastStableBoard = [];
+	    for(i= 0;i<now.GAMEWIDE;i++){
+	      now.lastStableBoard[i] = [];
+	      for(var j = 0; j < now.GAMEHIGH; j++){
+	        now.lastStableBoard[i][j] = -1;
+	      }
+	    }
+	    paper.clear();
+	    width = now.GAMEWIDE*now.GAMEUNIT;
+	    height = now.GAMEHIGH*now.GAMEUNIT;
+	    paper = Raphael(200,50,width,height);
+	    r = paper.rect(0,0,width,height).attr("fill","white").attr("stroke", "blue");
+	    now.drawBoard(now.stableBoard);
+	}
+	else
+	{
+		for(x in board){
+			for(y in board[x]){
+				filler = colors[board[x][y]];
+				if(!jQuery.isArray(now.lastStableBoard[x])){
+					paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("fill",filler);
+				}
+				else
+				{
+					if(board[x][y] != now.lastStableBoard[x][y] ){
+						paper.rect((x*now.GAMEUNIT),(y*now.GAMEUNIT),now.GAMEUNIT,now.GAMEUNIT).attr("fill",filler);
+					}
+				}
+			}
+		} 
+		now.lastStableBoard = board;   
+	}
+	
 }
 
-function drawing(varname){
-   var me = ArrayIndexOf(now.clients, function(obj){
-       return obj.name == varname;
-   });
-   if (now.clients[me].draw.length === 0) {
-     return;
-   }
-   //console.log("array is:");
-   //console.log(now.clients[me]);
-   //console.log(now.clients[me].draw);
-   var p = now.clients[me].draw.shift();
-   //console.log(p);
-   if(p.x == 0 && p.y == 0){
-     console.log("restart");
-     p = now.clients[me].draw.shift();
-     lastPoint = p;
-     path = paper.path("M"+(p.x-1)+" "+(p.y-1)+"L"+(p.x)+" "+(p.y));
-   }
-   else{
-     path = paper.path("M"+(lastPoint.x)+" "+(lastPoint.y)+"L"+(p.x)+" "+(p.y));
-     lastPoint = p;
-   }
-}
  
 function ArrayIndexOf(a, fnc) {
     if (!fnc || typeof (fnc) != 'function') {

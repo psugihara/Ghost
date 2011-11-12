@@ -67,13 +67,13 @@ everyone.now.setName = function(name){
   if (pos > -1) {
     this.now.askName("name is taken");
   } else {
-      this.now.drawBoard(game.board);
+    this.now.drawBoard(game.board);
     console.log("Joined: " + name);
   }
 }
 
 nowjs.on("connect", function() {
-});
+}); 
 
 nowjs.on("disconnect", function() {
   var left = this.now.name;

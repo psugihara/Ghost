@@ -44,8 +44,6 @@ nowjs.on("connect", function() {
    //	if(globalStart){console.log("tried to re-establish!!!!!!!!!!"); return;}else{console.log("FIRST JOIN");globalStart = true;}
   //	If the client's requested game room does not exist, create it.
   var group = nowjs.getGroup(this.now.group);
-  console.log(this.now.group);
-  console.log("hey");
   if (!group.game) {
     group.game = new g.Game(everyone.now.GAMEWIDE, everyone.now.GAMEHIGH);
     group.now.statuses = [-1,-1,-1,-1];

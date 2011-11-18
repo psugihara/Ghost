@@ -5,6 +5,7 @@
   , "dependencies": {
       "express"     : "latest"
     , "now"         : "latest"
+    , "jquery"      : "latest"
     , "jQuery"      : "latest"
     , "jsdom"       : "latest"
     , "underscore"  : "latest"
